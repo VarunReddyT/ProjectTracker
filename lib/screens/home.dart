@@ -9,49 +9,55 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final List<String> _list = ['Home', 'Profile', 'Settings', 'Logout'];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
       ),
-      drawer: GFDrawer( // Add the GFDrawer here
+      drawer: GFDrawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             const GFDrawerHeader(
-              currentAccountPicture: GFAvatar(
-                radius: 80.0,
-                backgroundImage: NetworkImage(
-                    "https://cdn.pixabay.com/photo/2017/12/03/18/04/christmas-balls-2995437_960_720.jpg"),
+              decoration: BoxDecoration(
+                color: Colors.blue,
               ),
-              otherAccountsPictures: <Widget>[
-                Image(
-                  image: NetworkImage(
-                      "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
-                  fit: BoxFit.cover,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Icon(
+                    Icons.account_circle,
+                    size: 100,
+                  ),
                 ),
-                GFAvatar(
-                  child: Text("ab"),
-                )
-              ],
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children:   <Widget>[
-                  Text('User Name'),
-                  Text('user@userid.com'),
-                ],
               ),
-            ),
+            ),         
             ListTile(
-              title: const Text('Item 1'),
+              title: const Text('Profile'),
+              trailing : const Icon(
+                Icons.account_circle_rounded,
+              ),
               onTap: () {
                 // Add functionality here if needed
               },
             ),
             ListTile(
-              title: const Text('Item 2'),
+              title: const Text('Settings'),
+              trailing: const Icon(
+                Icons.settings,
+              ),
+              onTap: () {
+                // Add functionality here if needed
+              },
+            ),
+            ListTile(
+              title: const Text('Logout'),
+              trailing: const Icon(
+                Icons.logout_rounded,
+                color: Colors.red,
+              ),
               onTap: () {
                 // Add functionality here if needed
               },
@@ -59,8 +65,23 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      body: const Center(
-        child: Text('Welcome to Home Page'),
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: _list.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(_list[index]),
+                  onTap: () {
+                    // Add functionality here if needed
+                  },
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
