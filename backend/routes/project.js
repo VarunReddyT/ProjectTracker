@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const Project = require('../models/Project');
 const Team = require('../models/team');
-const User = require('../models/User');
+const {BaseUser} = require('../models/user');
 
 router.post('/addProject', async (req, res) => {
     if(req.user.role !== "admin"){
@@ -69,7 +69,7 @@ router.get('/getProject/:projectId', async (req, res) => {
 
 router.get('/getProjects/:userId', async (req, res) => {
     try {
-        const user = await User.findOne({
+        const user = await BaseUser.findOne({
             _id: req.params.userId
         });
         if (!user) {
@@ -86,7 +86,7 @@ router.get('/getProjects/:userId', async (req, res) => {
 
 router.get('/getOngoingProjects/:userId', async (req, res) => {
     try {
-        const user = await User.findOne({
+        const user = await BaseUser.findOne({
             _id: req.params.userId
         });
         if (!user) {
@@ -104,7 +104,7 @@ router.get('/getOngoingProjects/:userId', async (req, res) => {
 
 router.get('/getCompletedProjects/:userId', async (req, res) => {
     try {
-        const user = await User.findOne({
+        const user = await BaseUser.findOne({
             _id: req.params.userId
         });
         if (!user) {

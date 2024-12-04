@@ -1,21 +1,21 @@
 const router = require('express').Router();
-const User = require('../models/User');
+const { BaseUser} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 router.post('/addUser', async (req, res) => {
-    if(req.user.role !== "admin"){
-        return res.status(400).send("You are not authorized to add a user");
-    }
+    // if(req.user.role !== "admin"){
+    //     return res.status(400).send("You are not authorized to add a user");
+    // }
     try {
-        const emailExists = await User.findOne({
+        const emailExists = await BaseUser.findOne({
             email: req.body.email
         });
         if (emailExists) {
             return res.status(400).send("Email already exists");
         }
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = new User({
+        const user = new Student({
             username: req.body.username,
             email: req.body.email,
             password: hashedPassword,
@@ -33,18 +33,25 @@ router.post('/addUser', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
     try {
-        const user = await User.findOne({email});
+        let user = await BaseUser.findOne({ email });
         if (!user) {
-            return res.status(400).send("Invalid Credentials");
+            return res.status(400).send("Invalid Email");
         }
+        const role = user.role;
+
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
-            return res.status(400).send("Invalid Credentials");
+            return res.status(400).send("Invalid Password");
         }
-        const token = jwt.sign({_id: user._id, role: user.role}, "varunkey");
-        res.status(200).send(token);
+        const token = jwt.sign({ _id: user._id, role: role }, "varunkey");
+        if (role === "student") {
+            res.status(200).send({ token: token, role: role, studentName: user.studentName, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds });
+        }
+        else {
+            res.status(200).send({ token: token, role: role });
+        }
     } catch (err) {
         res.status(400).send(err);
     }
@@ -52,7 +59,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/changePassword', async (req, res) => {
     try {
-        const user = await User.findOne({
+        const user = await BaseUser.findOne({
             email: req.body.email
         });
         if (!user) {
@@ -67,17 +74,40 @@ router.post('/changePassword', async (req, res) => {
 });
 
 router.get('/getUser', async (req, res) => {
-    if(req.user.role !== "admin"){
+    if (req.user.role !== "admin") {
         return res.status(400).send("You are not authorized to view a user");
     }
     try {
-        const user = await User.findOne({
+        const user = await BaseUser.findOne({
             email: req.body.email
         });
         if (!user) {
             return res.status(400).send("User not found");
         }
         res.status(200).send(user);
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
+
+// * To be removed later
+
+router.post('/addAdmin', async (req, res) => {
+    try {
+        const emailExists = await BaseUser.findOne({
+            email: req.body.email
+        });
+        if (emailExists) {
+            return res.status(400).send("Email already exists");
+        }
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const admin = new Admin({
+            username: req.body.username,
+            email: req.body.email,
+            password: hashedPassword
+        });
+        const savedAdmin = await admin.save();
+        res.status(200).send(savedAdmin);
     } catch (err) {
         res.status(400).send(err);
     }
