@@ -35,6 +35,9 @@ const ProjectSchema = new mongoose.Schema({
     teamId : {
         type: mongoose.Schema.Types.ObjectId,
         ref : 'Team'
+    },
+    studentRollNo : {
+        type : String
     }
 });
 

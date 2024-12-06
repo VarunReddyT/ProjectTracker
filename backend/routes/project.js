@@ -1,12 +1,12 @@
 const router = require('express').Router();
-const Project = require('../models/Project');
+const Project = require('../models/project');
 const Team = require('../models/team');
 const {BaseUser} = require('../models/user');
 
 router.post('/addProject', async (req, res) => {
-    if(req.user.role !== "admin"){
-        return res.status(400).send("You are not authorized to assign a project");
-    }
+    // if(req.user.role !== "admin"){
+    //     return res.status(400).send("You are not authorized to assign a project");
+    // }
     try {
         const project = new Project({
             projectTitle : req.body.projectTitle,
@@ -17,9 +17,28 @@ router.post('/addProject', async (req, res) => {
         const savedProject = await project.save();
         res.status(200).send(savedProject);
     } catch (err) {
-        res.status(400).send(err);
+        res.status(500).send(err);
     }
 });
+
+router.post('/addPersonalProject/:studentRollNo',async(req,res)=>{
+    try{
+        const project = new Project({
+            projectTitle : req.body.projectTitle,
+            projectType: 'Personal',
+            projectDescription: req.body.projectDescription,
+            projectDomain: req.body.projectDomain,
+            studentRollNo : req.params.studentRollNo
+        })
+        const user = BaseUser.findOne({studentId : req.params.studentRollNo});
+        console.log(user);
+        const savedProject = await project.save();
+        res.status(200).send(savedProject);
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+})
 
 router.post('/assignProject/:teamId', async (req, res) => {
     if(req.user.role !== "admin"){
@@ -67,10 +86,10 @@ router.get('/getProject/:projectId', async (req, res) => {
     }
 });
 
-router.get('/getProjects/:userId', async (req, res) => {
+router.get('/getProjects/:studentRollNo', async (req, res) => {
     try {
         const user = await BaseUser.findOne({
-            _id: req.params.userId
+            studentRollNo: req.params.studentRollNo
         });
         if (!user) {
             return res.status(400).send("User not found");
@@ -78,16 +97,19 @@ router.get('/getProjects/:userId', async (req, res) => {
         const projects = await Project.find({
             _id: { $in: user.projectIds }
         });
+        if(!projects){
+            res.status(200).send({message : "No current projects"})
+        }
         res.status(200).send(projects);
     } catch (err) {
         res.status(400).send(err);
     }
 });
 
-router.get('/getOngoingProjects/:userId', async (req, res) => {
+router.get('/getOngoingProjects/:studentRollNo', async (req, res) => {
     try {
         const user = await BaseUser.findOne({
-            _id: req.params.userId
+            studentRollNo: req.params.studentRollNo
         });
         if (!user) {
             return res.status(400).send("User not found");
@@ -102,10 +124,10 @@ router.get('/getOngoingProjects/:userId', async (req, res) => {
     }
 });
 
-router.get('/getCompletedProjects/:userId', async (req, res) => {
+router.get('/getCompletedProjects/:studentRollNo', async (req, res) => {
     try {
         const user = await BaseUser.findOne({
-            _id: req.params.userId
+            studentRollNo: req.params.studentRollNo
         });
         if (!user) {
             return res.status(400).send("User not found");
