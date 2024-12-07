@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { BaseUser} = require('../models/user');
+const { BaseUser, Student} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).send("Invalid Password");
         }
         const token = jwt.sign({ _id: user._id, role: role }, "varunkey");
-        if (role === "student") {
+        if (role === "Student") {
             res.status(200).send({ token: token, role: role, studentName: user.studentName, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds });
         }
         else {

@@ -37,7 +37,8 @@ const ProjectSchema = new mongoose.Schema({
         ref : 'Team'
     },
     studentRollNo : {
-        type : String
+        type : String,
+        default : null
     }
 });
 

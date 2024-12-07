@@ -13,7 +13,7 @@ require('dotenv').config();
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb+srv://Tvarun2014:varunreddy2014@cluster0.cc98p65.mongodb.net/projecttracker")
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log('Connected to MongoDB');
     })
