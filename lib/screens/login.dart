@@ -45,6 +45,7 @@ class _LoginState extends State<Login> {
           await storage.write(key: 'inAteam', value: responseData['inAteam'].toString());
           await storage.write(key: 'teamId', value: responseData['teamId']);
           await storage.write(key: 'projectIds', value: jsonEncode(responseData['projectIds']));
+          print(responseData);
           if(mounted){
             Navigator.pushReplacementNamed(context, "/home");
           }
@@ -81,6 +82,7 @@ class _LoginState extends State<Login> {
         ),
         body: Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(10),

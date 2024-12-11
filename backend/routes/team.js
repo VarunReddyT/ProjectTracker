@@ -17,10 +17,9 @@ router.post('/addTeam', async (req, res) => {
     }
 });
 
-router.get('/getTeam', async (req, res) => {
-    const {teamId} = req.body;
+router.get('/getTeam/:teamId', async (req, res) => {
     try{
-        const team = await Team.find({teamId: teamId});
+        const team = await Team.find({_id: req.params.teamId});
         res.status(200).send(team);
     }
     catch(err){
@@ -31,7 +30,7 @@ router.get('/getTeam', async (req, res) => {
 router.put('/assignProject', async (req, res) => {
     const {teamId, projectId} = req.body;
     try{
-        const team = await Team.findOneAndUpdate({teamId: teamId}, {projectId: projectId});
+        const team = await Team.findOneAndUpdate({_id: teamId}, {projectId: projectId});
         res.status(200).send(team);
     }
     catch(err){

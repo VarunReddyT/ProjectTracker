@@ -134,12 +134,15 @@ router.get('/getOngoingProjects/:studentRollNo', async (req, res) => {
                 message: "User not found" 
             });
         }
-        
         const projects = await Project.find({
             _id: { $in: user.projectIds },
             projectStatus: 'Ongoing',
-            studentRollNo : req.params.studentRollNo || null
+            $or: [
+                { studentRollNo: req.params.studentRollNo },
+                { studentRollNo: null }
+            ]
         });
+
         const studentProjects = [];
         for (let i = 0; i < projects.length; i++) {
             if (projects[i].teamId) {
