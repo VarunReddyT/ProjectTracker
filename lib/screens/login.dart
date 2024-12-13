@@ -12,7 +12,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   void login() async {
-    var url = Uri.parse('http://localhost:4000/api/user/login');
+    var url = Uri.parse('http://192.168.0.161:4000/api/user/login');
     try {
       var response = await http.post(
         url,
@@ -45,7 +45,6 @@ class _LoginState extends State<Login> {
           await storage.write(key: 'inAteam', value: responseData['inAteam'].toString());
           await storage.write(key: 'teamId', value: responseData['teamId']);
           await storage.write(key: 'projectIds', value: jsonEncode(responseData['projectIds']));
-          print(responseData);
           if(mounted){
             Navigator.pushReplacementNamed(context, "/home");
           }
@@ -67,7 +66,6 @@ class _LoginState extends State<Login> {
           ),
         );
       }
-      print(e);
     }
   }
 
@@ -90,6 +88,7 @@ class _LoginState extends State<Login> {
                 controller: emailController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.email_outlined),
                   labelText: 'Email',
                 ),
               ),
@@ -100,6 +99,7 @@ class _LoginState extends State<Login> {
                 controller: passwordController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.lock_outline_rounded),
                   labelText: 'Password',
                 ),
               ),

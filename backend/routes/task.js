@@ -2,14 +2,14 @@ const router = require('express').Router();
 const Task = require('../models/task');
 
 router.post('/addTask', async (req, res) => {
-    const {taskName, taskDescription, projectId, studentId} = req.body;
+    const {taskName, taskDescription, projectId, studentRollNo} = req.body;
 
     try{
         const task = new Task({
             taskName: taskName,
             taskDescription: taskDescription,
             projectId: projectId,
-            studentId: studentId
+            studentRollNo: studentRollNo
         });
         const savedTask = await task.save();
         res.status(200).send(savedTask);
@@ -19,12 +19,12 @@ router.post('/addTask', async (req, res) => {
     }
 });
 
-router.get('/getTasks/:studentId/:projectId', async (req, res) => {
-    const studentId = req.params.studentId;
+router.get('/getTasks/:studentRollNo/:projectId', async (req, res) => {
+    const studentRollNo = req.params.studentRollNo;
     const projectId = req.params.projectId;
 
     try{
-        const tasks = await Task.find({studentId: studentId, projectId: projectId});
+        const tasks = await Task.find({studentRollNo: studentRollNo, projectId: projectId});
         res.status(200).send(tasks);
     }
     catch(err){
@@ -56,6 +56,22 @@ router.delete('/deleteTask/:taskId', async (req, res) => {
         const task = await Task.findById(taskId);
         const deletedTask = await task.remove();
         res.status(200).send(deletedTask);
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
+router.get('/getTaskStatuses/:studentRollNo/:projectId', async (req, res) => {
+    const studentRollNo = req.params.studentRollNo;
+    const projectId = req.params.projectId;
+
+    try{
+        const tasks = await Task.find({studentRollNo: studentRollNo, projectId: projectId});
+        const taskStatuses = tasks.map(task => task.taskStatus);
+        const ongoing = taskStatuses.filter(status => status === false).length;
+        const completed = taskStatuses.filter(status => status === true).length;
+        res.status(200).send({ongoing: ongoing, completed: completed});
     }
     catch(err){
         res.status(500).send(err);

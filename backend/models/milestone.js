@@ -24,6 +24,9 @@ const MilestoneSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    milestoneUrl : {
+        type: String
+    },
     projectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref : 'Project',
@@ -32,7 +35,6 @@ const MilestoneSchema = new mongoose.Schema({
     studentId : {
         type: mongoose.Schema.Types.ObjectId,
         ref : 'User',
-        required: true
     }
 });
 

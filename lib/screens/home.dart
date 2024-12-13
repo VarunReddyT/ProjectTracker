@@ -29,6 +29,7 @@ class _HomeState extends State<Home> {
       await storage.write(key: 'projectDescription', value: project['projectDescription']);
       await storage.write(key: 'projectStatus', value: project['projectStatus']);
       await storage.write(key: 'projectDomain', value: project['projectDomain']);
+      await storage.write(key: 'projectType', value: project['projectType']);
       if(project['studentRollNo'] == null){
         await storage.write(key:'teamId', value: project['teamId']);
         await storage.write(key:'projectStartDate', value: project['projectStartDate']);
@@ -45,7 +46,7 @@ class _HomeState extends State<Home> {
     
     try {
       var response = await http.get(Uri.parse(
-          'http://localhost:4000/api/project/getOngoingProjects/$studentRollNo'));
+          'http://192.168.0.161:4000/api/project/getOngoingProjects/$studentRollNo'));
 
       var data = jsonDecode(response.body);
       if (data is List) {
@@ -79,12 +80,12 @@ class _HomeState extends State<Home> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.black87),
-            onPressed: () {},
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.add, color: Colors.black87),
+        //     onPressed: () {},
+        //   ),
+        // ],
       ),
       drawer: Drawer(
         child: ListView(

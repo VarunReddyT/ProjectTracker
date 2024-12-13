@@ -25,9 +25,8 @@ const TaskSchema = new mongoose.Schema({
         ref : 'Project',
         required: true
     },
-    studentId : {
-        type: mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+    studentRollNo: {
+        type: String,
         required: true
     }
 });
