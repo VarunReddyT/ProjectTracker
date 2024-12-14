@@ -4,7 +4,7 @@ import 'package:project_tracker/screens/login.dart';
 import 'package:project_tracker/screens/project.dart';
 import 'package:project_tracker/screens/tasks.dart';
 import 'package:project_tracker/screens/milestones.dart';
-import 'package:project_tracker/screens/github.dart';
+import 'package:project_tracker/screens/addproject.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         '/project': (context) => const Project(),
         '/tasks': (context) => const Tasks(),
         '/milestones': (context) => const Milestones(),
-        '/github': (context) => const Github(),
+        '/addProject': (context) => const AddProject(),
       },
     );
   }

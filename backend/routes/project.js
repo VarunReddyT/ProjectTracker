@@ -12,7 +12,8 @@ router.post('/addProject', async (req, res) => {
             projectTitle : req.body.projectTitle,
             projectType: 'Academic',
             projectDescription: req.body.projectDescription,
-            projectDomain: req.body.projectDomain
+            projectDomain: req.body.projectDomain,
+            projectTechnologies : req.body.projectTechnologies,
         });
         const savedProject = await project.save();
 
@@ -24,12 +25,14 @@ router.post('/addProject', async (req, res) => {
 
 router.post('/addPersonalProject/:studentRollNo',async(req,res)=>{
     try{
+        console.log(req.body);
         const project = new Project({
             projectTitle : req.body.projectTitle,
             projectType: 'Personal',
             projectDescription: req.body.projectDescription,
             projectDomain: req.body.projectDomain,
             studentRollNo : req.params.studentRollNo,
+            projectTechnologies : req.body.projectTechnologies,
             projectStatus : 'Ongoing',
         })
         const savedProject = await project.save();
@@ -39,6 +42,7 @@ router.post('/addPersonalProject/:studentRollNo',async(req,res)=>{
         }
         user.projectIds.push(savedProject._id);
         await user.save();
+        console.log(savedProject);
         res.status(200).send(savedProject);
     }
     catch(err){

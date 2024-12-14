@@ -21,6 +21,10 @@ const ProjectSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    projectTechnologies: {
+        type: [String],
+        required: true
+    },
     projectStatus: {
         type: String,
         enum: ['Unassigned','Ongoing', 'Completed'],

@@ -34,13 +34,12 @@ router.get('/getTasks/:studentRollNo/:projectId', async (req, res) => {
 
 router.put('/updateTask/:taskId', async (req, res) => {
     const taskId = req.params.taskId;
-    const {taskName, taskDescription, taskStatus} = req.body;
+    const {taskName, taskDescription} = req.body;
 
     try{
         const task = await Task.findById(taskId);
         task.taskName = taskName;
         task.taskDescription = taskDescription;
-        task.taskStatus = taskStatus;
         const updatedTask = await task.save();
         res.status(200).send(updatedTask);
     }
@@ -72,6 +71,20 @@ router.get('/getTaskStatuses/:studentRollNo/:projectId', async (req, res) => {
         const ongoing = taskStatuses.filter(status => status === false).length;
         const completed = taskStatuses.filter(status => status === true).length;
         res.status(200).send({ongoing: ongoing, completed: completed});
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
+router.put('/updateTaskStatus/:taskId', async (req, res) => {
+    const taskId = req.params.taskId;
+
+    try{
+        const task = await Task.findById(taskId);
+        task.taskStatus = !task.taskStatus;
+        const updatedTask = await task.save();
+        res.status(200).send(updatedTask);
     }
     catch(err){
         res.status(500).send(err);

@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
         }
         const token = jwt.sign({ _id: user._id, role: role }, "varunkey");
         if (role === "Student") {
-            res.status(200).send({ token: token, role: role, studentName: user.studentName, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds });
+            res.status(200).send({ token: token, role: role, studentName: user.username, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds });
         }
         else {
             res.status(200).send({ token: token, role: role });

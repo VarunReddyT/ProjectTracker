@@ -12,10 +12,6 @@ const MilestoneSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    milestoneStatus: {
-        type: Boolean,
-        default: false
-    },
     milestoneStartDate: {
         type: Date,
         required: true
@@ -24,18 +20,24 @@ const MilestoneSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    milestoneUrl : {
-        type: String
-    },
     projectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref : 'Project',
-        required: true
     },
-    studentId : {
-        type: mongoose.Schema.Types.ObjectId,
-        ref : 'User',
-    }
+    studentDetails :[{
+        studentRollNo : {
+            type : String
+        },
+        mileStoneUrl : {
+            type : String,
+            default : null
+        },
+        mileStoneStatus : {
+            type : Boolean,
+            default : false
+        }
+
+    }]
 });
 
 module.exports = mongoose.model('Milestone', MilestoneSchema);

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:project_tracker/screens/login.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -11,7 +12,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Map<String,dynamic>> projects = [];
+  List<Map<String, dynamic>> projects = [];
   bool _isLoading = true;
   String? studentRollNo;
   String? studentName;
@@ -22,28 +23,37 @@ class _HomeState extends State<Home> {
     fetchData();
   }
 
-  void goToProject(Map<String,dynamic> project) async {
-     const storage = FlutterSecureStorage();
-      await storage.write(key: 'projectId', value: project['_id']);
-      await storage.write(key: 'projectTitle', value: project['projectTitle']);
-      await storage.write(key: 'projectDescription', value: project['projectDescription']);
-      await storage.write(key: 'projectStatus', value: project['projectStatus']);
-      await storage.write(key: 'projectDomain', value: project['projectDomain']);
-      await storage.write(key: 'projectType', value: project['projectType']);
-      if(project['studentRollNo'] == null){
-        await storage.write(key:'teamId', value: project['teamId']);
-        await storage.write(key:'projectStartDate', value: project['projectStartDate']);
-      }
-      if(mounted){
-        Navigator.pushNamed(context, '/project');
-      }
+  void goToProject(Map<String, dynamic> project) async {
+    const storage = FlutterSecureStorage();
+    await storage.write(key: 'projectId', value: project['_id']);
+    await storage.write(key: 'projectTitle', value: project['projectTitle']);
+    await storage.write(
+        key: 'projectDescription', value: project['projectDescription']);
+    await storage.write(key: 'projectStatus', value: project['projectStatus']);
+    await storage.write(key: 'projectDomain', value: project['projectDomain']);
+    await storage.write(key: 'projectType', value: project['projectType']);
+    if (project['studentRollNo'] == null) {
+      await storage.write(key: 'teamId', value: project['teamId']);
+      await storage.write(
+          key: 'projectStartDate', value: project['projectStartDate']);
+    }
+    if (mounted) {
+      Navigator.pushNamed(context, '/project');
+    }
   }
 
-  void fetchData() async {
+  void addProject() async {
+    var result = await Navigator.pushNamed(context, '/addProject');
+    if (result == true) {
+      fetchData();
+    }
+  }
+
+  Future<void> fetchData() async {
     const storage = FlutterSecureStorage();
     studentRollNo = await storage.read(key: 'studentRollNo');
     studentName = await storage.read(key: 'studentName');
-    
+
     try {
       var response = await http.get(Uri.parse(
           'http://192.168.0.161:4000/api/project/getOngoingProjects/$studentRollNo'));
@@ -57,9 +67,9 @@ class _HomeState extends State<Home> {
       }
     } catch (err) {
       setState(() => _isLoading = false);
-      if(mounted){
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $err'), backgroundColor: Colors.red)
+          SnackBar(content: Text('Error: $err'), backgroundColor: Colors.red),
         );
       }
     }
@@ -73,19 +83,10 @@ class _HomeState extends State<Home> {
         elevation: 0,
         backgroundColor: Colors.white,
         title: const Text(
-          'My Projects', 
-          style: TextStyle(
-            color: Colors.black87, 
-            fontWeight: FontWeight.bold
-          ),
+          'My Projects',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.add, color: Colors.black87),
-        //     onPressed: () {},
-        //   ),
-        // ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -113,44 +114,58 @@ class _HomeState extends State<Home> {
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                const storage = FlutterSecureStorage();
+                storage.deleteAll();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                  (Route<dynamic> route) => false,
+                );
+              },
             ),
           ],
         ),
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : projects.isEmpty
-          ? const Center(child: Text('No Projects Found'))
-          : ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: projects.length,
-              itemBuilder: (context, index) => Card(
-                elevation: 4,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  title: Text(
-                    projects[index]['projectTitle'],
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: fetchData,
+              child: projects.isEmpty
+                  ? const Center(child: Text('No Projects Found'))
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: projects.length,
+                      itemBuilder: (context, index) => Card(
+                        elevation: 4,
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16),
+                          title: Text(
+                            projects[index]['projectTitle'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          trailing: const Icon(Icons.chevron_right,
+                              color: Colors.blue),
+                          onTap: () {
+                            goToProject(projects[index]);
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                  trailing: const Icon(Icons.chevron_right, color: Colors.blue),
-                  onTap: () {
-                      goToProject(projects[index]);
-                  },
-                ),
-              ),
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {},
-              child: const Icon(Icons.add),
-            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          addProject();
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

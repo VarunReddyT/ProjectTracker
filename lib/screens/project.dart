@@ -32,10 +32,7 @@ class _ProjectState extends State<Project> {
   bool _isLoading = false;
   int completedTasks = 0;
   int pendingTasks = 0;
-
-  TextEditingController taskNameController = TextEditingController();
-  TextEditingController taskDescriptionController = TextEditingController();
-
+  
   @override
   void initState() {
     super.initState();
@@ -125,54 +122,7 @@ class _ProjectState extends State<Project> {
     });
   }
 
-  void addTask() async {
-    const storage = FlutterSecureStorage();
-    String? studentRollNo = await storage.read(key: 'studentRollNo');
-    try {
-      var response = await http.post(
-        Uri.parse('http://192.168.0.161:4000/api/task/addTask'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'taskName': taskNameController.text,
-          'taskDescription': taskDescriptionController.text,
-          'projectId': projectId,
-          'studentRollNo': studentRollNo
-        }),
-      );
-      if (response.statusCode == 200) {
-        taskNameController.clear();
-        taskDescriptionController.clear();
-        fetchTaskStatus(studentRollNo, projectId);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Task added successfully'),
-              backgroundColor: Color.fromARGB(255, 59, 180, 63),
-            ),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to add task : ${response.body}'),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add task : ${e.toString()}'),
-          ),
-        );
-      }
-    }
-  }
-
+  
   @override
   void dispose() {
     clearStorage();
@@ -196,6 +146,52 @@ class _ProjectState extends State<Project> {
         appBar: AppBar(
           title: const Text('Project Details'),
           centerTitle: true,
+          // actions: [
+          //   PopupMenuButton<String>(
+          //     onSelected: (value) {
+          //       if (value == 'Delete Project') {
+          //         showDialog(
+          //           context: context,
+          //           builder: (BuildContext context) {
+          //             return AlertDialog(
+          //               title: const Text('Delete Project'),
+          //               content: const Text(
+          //                   'Are you sure you want to delete this project?'),
+          //               actions: [
+          //                 TextButton(
+          //                   onPressed: () {
+          //                     Navigator.pop(context);
+          //                   },
+          //                   child: const Text('Cancel'),
+          //                 ),
+          //                 TextButton(
+          //                   onPressed: () {
+          //                     Navigator.pop(context);
+          //                     Navigator.pushNamed(context, '/home');
+          //                   },
+          //                   child: const Text('Delete'),
+          //                 ),
+          //               ],
+          //             );
+          //           },
+          //         );
+          //       }
+          //     },
+          //     itemBuilder: (BuildContext context) {
+          //       return const <PopupMenuEntry<String>>[
+          //         PopupMenuItem<String>(
+          //           value: 'Delete Project',
+          //           child: Text('Delete Project',
+          //           style: TextStyle(
+          //             color: Colors.red,
+          //           ),
+          //           ),
+
+          //         ),
+          //       ];
+          //     },
+          //   )
+          // ],
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -238,119 +234,48 @@ class _ProjectState extends State<Project> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        SfCircularChart(
-                          title: const ChartTitle(text: 'Tasks Status'),
-                          legend: const Legend(
-                            isVisible: true,
-                            overflowMode: LegendItemOverflowMode.wrap,
-                            position: LegendPosition.bottom,
-                          ),
-                          series: <PieSeries<_ChartData, String>>[
-                            PieSeries<_ChartData, String>(
-                              dataSource: [
-                                _ChartData('Completed Tasks', completedTasks),
-                                _ChartData('Pending Tasks', pendingTasks),
-                              ],
-                              xValueMapper: (_ChartData data, _) => data.label,
-                              yValueMapper: (_ChartData data, _) => data.value,
-                              dataLabelMapper: (_ChartData data, _) =>
-                                  '${data.label} : ${data.value}',
-                              dataLabelSettings: const DataLabelSettings(
-                                isVisible: true,
-                                labelPosition: ChartDataLabelPosition.outside,
+                        if (completedTasks + pendingTasks > 0)
+                          SfCircularChart(
+                            title: const ChartTitle(text: 'Tasks Status'),
+                            legend: const Legend(
+                              isVisible: true,
+                              overflowMode: LegendItemOverflowMode.wrap,
+                              position: LegendPosition.bottom,
+                            ),
+                            series: <PieSeries<_ChartData, String>>[
+                              PieSeries<_ChartData, String>(
+                                dataSource: [
+                                  _ChartData('Completed Tasks', completedTasks),
+                                  _ChartData('Pending Tasks', pendingTasks),
+                                ],
+                                xValueMapper: (_ChartData data, _) => data.label,
+                                yValueMapper: (_ChartData data, _) => data.value,
+                                dataLabelMapper: (_ChartData data, _) =>
+                                    '${data.value}',
+                                dataLabelSettings: const DataLabelSettings(
+                                  isVisible: true,
+                                  labelPosition: ChartDataLabelPosition.outside,
+                                ),
+                              )
+                            ],
+                          )
+                        else
+                          const Center(
+                            child: Text(
+                              'No tasks available',
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 16,
                               ),
-                            )
-                          ],
-                        ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
                 ),
               ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showModalBottomSheet(
-                context: context,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                ),
-                isScrollControlled: true,
-                builder: (BuildContext context) {
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      top: 16,
-                      bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Add Task',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: taskNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Task Name',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: taskDescriptionController,
-                          decoration: const InputDecoration(
-                            labelText: 'Task Description',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            addTask();
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Add Task'),
-                        ),
-                      ],
-                    ),
-                  );
-                });
-          },
-          backgroundColor: Colors.deepPurple,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.task_sharp),
-              label: 'Tasks',
-            ),
-            if (projectType == 'Academic')
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.flag_circle_rounded),
-                label: 'Milestones',
-              ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.code_rounded),
-              label: 'Github',
-            ),
-          ],
-          onTap: (index) {},
-        ));
+        floatingActionButton: ExpandableFab(),
+    );
   }
 
   TableRow _buildTableRow(String label, String? value) {
@@ -376,6 +301,98 @@ class _ProjectState extends State<Project> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ExpandableFab extends StatefulWidget {
+  @override
+  _ExpandableFabState createState() => _ExpandableFabState();
+}
+
+class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  bool _isOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void toggle() {
+    setState(() {
+      _isOpen = !_isOpen;
+      if (_isOpen) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        _buildIcon(Offset(90, -20), Icons.flag_outlined, 0),
+        _buildIcon(Offset(60, 60), Icons.task_outlined, 1),
+        // _buildIcon(Offset(-20,100), Icons.code_outlined, 2),
+
+        Positioned(
+          bottom: 20,
+          right: 20,
+          child: FloatingActionButton(
+            onPressed: toggle,
+            child: Icon(_isOpen ? Icons.close : Icons.more_horiz_outlined),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Method to create icons in specific positions
+  Widget _buildIcon(Offset offset, IconData icon, int index) {
+    return Positioned(
+      bottom: 20 + offset.dy,
+      right: 20 + offset.dx,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Visibility(
+          visible: _isOpen,
+          child: FloatingActionButton(
+            onPressed: () {
+              if (index == 0) {
+                Navigator.pushNamed(context, '/milestones');
+              } else if (index == 1) {
+                Navigator.pushNamed(context, '/tasks');
+              } 
+              // else {
+              //   Navigator.pushNamed(context, '/settings');
+              // }
+            },
+            child: Icon(icon),
+          ),
+        ),
+      ),
     );
   }
 }
