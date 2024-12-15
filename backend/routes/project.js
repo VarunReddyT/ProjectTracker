@@ -14,6 +14,7 @@ router.post('/addProject', async (req, res) => {
             projectDescription: req.body.projectDescription,
             projectDomain: req.body.projectDomain,
             projectTechnologies : req.body.projectTechnologies,
+            teamId : null,
         });
         const savedProject = await project.save();
 

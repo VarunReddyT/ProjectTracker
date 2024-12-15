@@ -98,7 +98,7 @@ class _AddProjectState extends State<AddProject> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Project Name
+
                 TextFormField(
                   controller: _projectNameController,
                   decoration: const InputDecoration(
@@ -114,7 +114,6 @@ class _AddProjectState extends State<AddProject> {
                 ),
                 const SizedBox(height: 16),
 
-                // Description
                 TextFormField(
                   controller: _descController,
                   decoration: const InputDecoration(
@@ -131,7 +130,6 @@ class _AddProjectState extends State<AddProject> {
                 ),
                 const SizedBox(height: 16),
 
-                // Domain
                 TextFormField(
                   controller: _domainController,
                   decoration: const InputDecoration(
@@ -147,7 +145,6 @@ class _AddProjectState extends State<AddProject> {
                 ),
                 const SizedBox(height: 16),
 
-                // Technologies
                 Row(
                   children: [
                     Expanded(
@@ -167,7 +164,6 @@ class _AddProjectState extends State<AddProject> {
                 ),
                 const SizedBox(height: 16),
 
-                // Display selected technologies
                 Wrap(
                   spacing: 8,
                   children: technologies

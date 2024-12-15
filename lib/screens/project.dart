@@ -274,7 +274,7 @@ class _ProjectState extends State<Project> {
                   ),
                 ),
               ),
-        floatingActionButton: ExpandableFab(),
+        floatingActionButton: const ExpandableFab(),
     );
   }
 
@@ -306,8 +306,9 @@ class _ProjectState extends State<Project> {
 }
 
 class ExpandableFab extends StatefulWidget {
+  const ExpandableFab({super.key});
   @override
-  _ExpandableFabState createState() => _ExpandableFabState();
+  State<ExpandableFab> createState() => _ExpandableFabState();
 }
 
 class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateMixin {
@@ -315,12 +316,14 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
   late Animation<double> _scaleAnimation;
   bool _isOpen = false;
 
+
   @override
   void initState() {
     super.initState();
+    fetchData();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
     );
 
     _scaleAnimation = Tween<double>(
@@ -330,6 +333,16 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
+  }
+
+  String? projectType;
+
+  void fetchData() async {
+    const storage = FlutterSecureStorage();
+    var projectType = await storage.read(key: 'projectType');
+    setState(() {
+      this.projectType = projectType;
+    });
   }
 
   @override
@@ -353,8 +366,10 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        _buildIcon(Offset(90, -20), Icons.flag_outlined, 0),
-        _buildIcon(Offset(60, 60), Icons.task_outlined, 1),
+        _buildIcon(const Offset(90, -20), projectType == 'Academic' ? Icons.flag_outlined : Icons.share_outlined, 0),
+        _buildIcon(const Offset(60, 60), Icons.task_outlined, 1),
+        if(projectType == 'Academic')
+          _buildIcon(const Offset(-20, 100), Icons.group_outlined, 2),
         // _buildIcon(Offset(-20,100), Icons.code_outlined, 2),
 
         Positioned(
@@ -381,13 +396,16 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
           child: FloatingActionButton(
             onPressed: () {
               if (index == 0) {
-                Navigator.pushNamed(context, '/milestones');
-              } else if (index == 1) {
+                projectType == 'Academic'
+                    ? Navigator.pushNamed(context, '/milestones')
+                    : Navigator.pushNamed(context, '/share');
+              } 
+              else if (index == 1) {
                 Navigator.pushNamed(context, '/tasks');
               } 
-              // else {
-              //   Navigator.pushNamed(context, '/settings');
-              // }
+              else if (index == 2) {
+                Navigator.pushNamed(context, '/team');
+              }
             },
             child: Icon(icon),
           ),

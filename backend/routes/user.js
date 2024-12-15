@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { BaseUser, Student} = require('../models/user');
+const { BaseUser, Student, Admin} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -23,7 +23,8 @@ router.post('/addUser', async (req, res) => {
             studentBranch: req.body.studentBranch,
             studentSection: req.body.studentSection,
             studentRollNo: req.body.studentRollNo,
-            studentSemester: req.body.studentSemester
+            studentSemester: req.body.studentSemester,
+            studentName : req.body.studentName,
         });
         const savedUser = await user.save();
         res.status(200).send(savedUser);
@@ -50,7 +51,7 @@ router.post('/login', async (req, res) => {
             res.status(200).send({ token: token, role: role, studentName: user.username, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds });
         }
         else {
-            res.status(200).send({ token: token, role: role });
+            res.status(200).send({ token: token, role: role, username: user.username, email: user.email });
         }
     } catch (err) {
         res.status(400).send(err);

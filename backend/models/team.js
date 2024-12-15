@@ -15,7 +15,11 @@ const TeamSchema = new mongoose.Schema({
     projectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref : 'Project'
-    }
+    },
+    studentsYear: {
+        type: Number,
+        required: true
+    },
 });
 
 module.exports = mongoose.model('Team', TeamSchema);
