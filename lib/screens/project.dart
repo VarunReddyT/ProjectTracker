@@ -42,7 +42,7 @@ class _ProjectState extends State<Project> {
   void fetchTaskStatus(String? studentRollNo, String? projectId) async {
     try {
       var response = await http.get(Uri.parse(
-          'http://192.168.0.163:4000/api/task/getTaskStatuses/$studentRollNo/$projectId'));
+          'https://ps-project-tracker.vercel.app//api/task/getTaskStatuses/$studentRollNo/$projectId'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -88,7 +88,7 @@ class _ProjectState extends State<Project> {
     if (teamId != null) {
       try {
         var response = await http.get(
-            Uri.parse('http://192.168.0.163:4000/api/team/getTeam/$teamId'));
+            Uri.parse('https://ps-project-tracker.vercel.app//api/team/getTeam/$teamId'));
         var data = jsonDecode(response.body);
 
         if (response.statusCode == 200) {

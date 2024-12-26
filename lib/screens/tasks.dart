@@ -31,7 +31,7 @@ class _TasksState extends State<Tasks> {
       var projectId = await storage.read(key: 'projectId');
       var response = await http.get(
         Uri.parse(
-            'http://192.168.0.163:4000/api/task/getTasks/$studentRollNo/$projectId'),
+            'https://ps-project-tracker.vercel.app//api/task/getTasks/$studentRollNo/$projectId'),
       );
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -73,7 +73,7 @@ class _TasksState extends State<Tasks> {
     String? projectId = await storage.read(key: 'projectId');
     try {
       var response = await http.post(
-        Uri.parse('http://192.168.0.163:4000/api/task/addTask'),
+        Uri.parse('https://ps-project-tracker.vercel.app//api/task/addTask'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -119,7 +119,7 @@ class _TasksState extends State<Tasks> {
   void markTaskAsCompleted(String taskId) async {
     try {
       var response = await http.put(
-        Uri.parse('http://192.168.0.163:4000/api/task/updateTaskStatus/$taskId'),
+        Uri.parse('https://ps-project-tracker.vercel.app//api/task/updateTaskStatus/$taskId'),
       );
       if (response.statusCode == 200) {
         getTasks();

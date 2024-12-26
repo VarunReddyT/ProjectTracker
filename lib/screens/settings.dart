@@ -21,7 +21,7 @@ class _SettingsState extends State<Settings> {
       var email = await storage.read(key: 'email');
 
       var response = await http.post(
-        Uri.parse('http://192.168.0.163:4000/api/user/changePassword'),
+        Uri.parse('https://ps-project-tracker.vercel.app//api/user/changePassword'),
         headers: {
           'Content-Type': 'application/json',
         },
