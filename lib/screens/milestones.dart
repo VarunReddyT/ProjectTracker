@@ -28,7 +28,7 @@ class _MilestonesState extends State<Milestones> {
       var projectId = await storage.read(key: 'projectId');
       var response = await http.get(
         Uri.parse(
-            'http://192.168.0.161:4000/api/milestone/getMilestone/$projectId'),
+            'http://192.168.0.163:4000/api/milestone/getMilestone/$projectId'),
       );
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -71,7 +71,7 @@ class _MilestonesState extends State<Milestones> {
     String? projectId = await storage.read(key: 'projectId');
     try {
       var response = await http.post(
-        Uri.parse('http://192.168.0.161:4000/api/milestone/addMilestone'),
+        Uri.parse('http://192.168.0.163:4000/api/milestone/addMilestone'),
         headers: {
           'Content-Type': 'application/json',
         },

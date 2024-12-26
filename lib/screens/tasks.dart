@@ -31,20 +31,20 @@ class _TasksState extends State<Tasks> {
       var projectId = await storage.read(key: 'projectId');
       var response = await http.get(
         Uri.parse(
-            'http://192.168.0.161:4000/api/task/getTasks/$studentRollNo/$projectId'),
+            'http://192.168.0.163:4000/api/task/getTasks/$studentRollNo/$projectId'),
       );
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         if (mounted) {
           setState(() {
             tasks = data;
-            isLoading = false; // Stop loading indicator
+            isLoading = false;
           });
         }
       } else {
         if (mounted) {
           setState(() {
-            isLoading = false; // Stop loading indicator
+            isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -56,7 +56,7 @@ class _TasksState extends State<Tasks> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          isLoading = false; // Stop loading indicator
+          isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -73,7 +73,7 @@ class _TasksState extends State<Tasks> {
     String? projectId = await storage.read(key: 'projectId');
     try {
       var response = await http.post(
-        Uri.parse('http://192.168.0.161:4000/api/task/addTask'),
+        Uri.parse('http://192.168.0.163:4000/api/task/addTask'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -119,7 +119,7 @@ class _TasksState extends State<Tasks> {
   void markTaskAsCompleted(String taskId) async {
     try {
       var response = await http.put(
-        Uri.parse('http://192.168.0.161:4000/api/task/updateTaskStatus/$taskId'),
+        Uri.parse('http://192.168.0.163:4000/api/task/updateTaskStatus/$taskId'),
       );
       if (response.statusCode == 200) {
         getTasks();
@@ -158,7 +158,12 @@ class _TasksState extends State<Tasks> {
         centerTitle: true,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return _buildShimmerEffect();
+              },
+            )
           : tasks.isEmpty
               ? const Center(
                   child: Text(
@@ -308,3 +313,27 @@ class _TasksState extends State<Tasks> {
     );
   }
 }
+
+ Widget _buildShimmerEffect() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(24),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            height: 16,
+            width: 200,
+            color: Colors.grey[300],
+          ),
+        ],
+      ),
+    );
+  }

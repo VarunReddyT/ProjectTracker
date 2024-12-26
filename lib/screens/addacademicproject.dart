@@ -28,7 +28,7 @@ class _AddacademicprojectState extends State<Addacademicproject> {
   void _submitForm() async {
     try {
       var response = await http.post(
-          Uri.parse('http://192.168.0.161:4000/api/project/addProject'),
+          Uri.parse('http://192.168.0.163:4000/api/project/addProject'),
           headers: {
             'Content-Type': 'application/json',
           },

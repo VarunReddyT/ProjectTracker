@@ -42,7 +42,7 @@ class _ProjectState extends State<Project> {
   void fetchTaskStatus(String? studentRollNo, String? projectId) async {
     try {
       var response = await http.get(Uri.parse(
-          'http://192.168.0.161:4000/api/task/getTaskStatuses/$studentRollNo/$projectId'));
+          'http://192.168.0.163:4000/api/task/getTaskStatuses/$studentRollNo/$projectId'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -88,13 +88,14 @@ class _ProjectState extends State<Project> {
     if (teamId != null) {
       try {
         var response = await http.get(
-            Uri.parse('http://192.168.0.161:4000/api/team/getTeam/$teamId'));
+            Uri.parse('http://192.168.0.163:4000/api/team/getTeam/$teamId'));
         var data = jsonDecode(response.body);
 
         if (response.statusCode == 200) {
           for (var member in data[0]['teamMembers']) {
             teamMembers.add(member.toString());
           }
+          await storage.write(key: 'teamMembers', value: jsonEncode(teamMembers));
         }
       } catch (e) {
         if (mounted) {
@@ -262,7 +263,7 @@ class _ProjectState extends State<Project> {
                         else
                           const Center(
                             child: Text(
-                              'No tasks available',
+                              'No tasks added yet',
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontSize: 16,
@@ -414,3 +415,4 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
     );
   }
 }
+

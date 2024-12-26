@@ -12,6 +12,7 @@ router.post('/addTeam', async (req, res) => {
             teamMembers: teamMembers
         });
         const savedTeam = await team.save();
+
         res.status(200).send(savedTeam);
     }
     catch(err){
@@ -80,4 +81,18 @@ router.put('/assignProject', async (req, res) => {
     }
 });
 
+router.get('/getStudentDetails/:studentRollNo/:teamId', async (req, res) => {
+    try{
+        console.log(req.params.studentRollNo, req.params.teamId);
+        const user = await Student.findOne({studentRollNo: req.params.studentRollNo, teamId: req.params.teamId});
+
+        if(!user){
+            return res.status(404).send("User not found");
+        }
+        res.status(200).send({studentName: user.studentName, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection,studentSemester: user.studentSemester});
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
 module.exports = router;

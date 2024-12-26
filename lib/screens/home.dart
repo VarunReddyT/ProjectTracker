@@ -56,7 +56,7 @@ class _HomeState extends State<Home> {
 
     try {
       var response = await http.get(Uri.parse(
-          'http://192.168.0.161:4000/api/project/getOngoingProjects/$studentRollNo'));
+          'http://192.168.0.163:4000/api/project/getOngoingProjects/$studentRollNo'));
 
       var data = jsonDecode(response.body);
       if (data is List) {
@@ -108,7 +108,10 @@ class _HomeState extends State<Home> {
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('Settings'),
-              onTap: () => Navigator.pop(context),
+              onTap: () => {
+                Navigator.pop(context),
+                Navigator.pushNamed(context, '/settings'),
+              }
             ),
             const Divider(),
             ListTile(

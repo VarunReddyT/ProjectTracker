@@ -66,7 +66,12 @@ router.post('/changePassword', async (req, res) => {
         if (!user) {
             return res.status(400).send("User not found");
         }
-        user.password = req.body.password;
+        const validPassword = await bcrypt.compare(req.body.currentPassword, user.password);
+        if (!validPassword) {
+            return res.status(400).send("Invalid Password");
+        }
+        const newPassword = await bcrypt.hash(req.body.newPassword, 10);
+        user.password = newPassword;
         const savedUser = await user.save();
         res.status(200).send(savedUser);
     } catch (err) {
