@@ -81,6 +81,19 @@ router.put('/assignProject', async (req, res) => {
     }
 });
 
+router.get('/getUnassignedTeams/:studentsYear', async (req, res) => {
+    try{
+        const teams = await Team.find({studentsYear: req.params.studentsYear, projectId: null});
+        if(!teams){
+            return res.status(404).send("Teams not found");
+        }
+        res.status(200).send(teams);
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
 router.get('/getStudentDetails/:studentRollNo/:teamId', async (req, res) => {
     try{
         console.log(req.params.studentRollNo, req.params.teamId);
@@ -95,4 +108,5 @@ router.get('/getStudentDetails/:studentRollNo/:teamId', async (req, res) => {
         res.status(500).send(err);
     }
 });
+
 module.exports = router;

@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         '/admin': (context) => const Admin(),
         '/addAcademicProject': (context) => const Addacademicproject(),
         '/addStudent': (context) => const Addstudent(),
-        '/assignProject': (context) => const Assignproject(),
+        '/assignProject': (context) => const AssignProject(),
         '/addMilestone': (context) => const Addmilestone(),
         '/addTeam': (context) => const Addteam(),
         '/viewTeams': (context) => const Viewteams(),

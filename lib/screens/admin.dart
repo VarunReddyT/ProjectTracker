@@ -80,6 +80,7 @@ class _AdminState extends State<Admin> {
           crossAxisCount: 2,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
+          childAspectRatio: 1.2,
           children: [
             _buildGridItem('Add Project', Icons.add_circle_outline_rounded, context, "/addAcademicProject"),
             _buildGridItem('Add Student', Icons.person_add_alt_1_outlined, context, "/addStudent"),
@@ -101,15 +102,16 @@ Widget _buildGridItem(String title, IconData icon, BuildContext context, String 
       Navigator.pushNamed(context, route);
     },
     child: Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: Colors.blueAccent,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(20),
+        
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.white, size: 40),
+          Icon(icon, color: Colors.white, size: 30),
           const SizedBox(height: 10),
           Text(
             title,

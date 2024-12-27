@@ -121,28 +121,34 @@ class _LoginState extends State<Login> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.all(10),
-              child: TextField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.email_outlined),
-                  labelText: 'Email',
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: TextField(
-                controller: passwordController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.lock_outline_rounded),
-                  labelText: 'Password',
-                ),
-                obscureText: true,
-              ),
-            ),
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: TextField(
+                        controller: emailController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(Icons.email_outlined),
+                          labelText: 'Email',
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: TextField(
+                        controller: passwordController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(Icons.lock_outline_rounded),
+                          labelText: 'Password',
+                        ),
+                        obscureText: true,
+                      ),
+                    ),
+                  ],
+                )),
             isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
