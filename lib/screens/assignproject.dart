@@ -34,11 +34,12 @@ class _AssignProjectState extends State<AssignProject> {
         var data = jsonDecode(response.body);
         setState(() {
           teams.clear();
+          teamData.clear();
           for (var team in data) {
             teams.add(team['teamName']);
           }
-          teamData.clear();
           teamData.addAll(data);
+          selectedTeam = null;
         });
       } else {
         if (mounted) {
@@ -73,19 +74,19 @@ class _AssignProjectState extends State<AssignProject> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Failed to fetch projects')));
+          setState(() {
+            isLoading = false;
+          });
         }
-        setState(() {
-          isLoading = false;
-        });
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed to fetch projects : $e')));
+        setState(() {
+          isLoading = false;
+        });
       }
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
@@ -114,13 +115,18 @@ class _AssignProjectState extends State<AssignProject> {
                       value: year, child: Text('$year'));
                 }).toList(),
                 onChanged: (int? value) {
-                  fetchTeams(value!);
                   setState(() {
                     selectedYear = value;
                   });
+                  if (value != null) {
+                    fetchTeams(value);
+                  }
                 },
               ),
               const SizedBox(height: 20),
+              teams.isEmpty
+                  ? const Center(child: Text('No teams available'))
+                  :
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: 'Select Team',
@@ -154,7 +160,10 @@ class _AssignProjectState extends State<AssignProject> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+
+                // ^^^^ To do: Assign project to selected team
+              },
               child: const Text('Assign'),
             ),
           ],
@@ -194,7 +203,6 @@ class _AssignProjectState extends State<AssignProject> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Project Name
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -209,8 +217,7 @@ class _AssignProjectState extends State<AssignProject> {
                                       ),
                                       const SizedBox(height: 10),
                                       Text(
-                                        project['projectDescription'] ??
-                                            'No description',
+                                        project['projectDescription'] ?? 'No description',
                                         style:
                                             const TextStyle(color: Colors.grey),
                                       ),
