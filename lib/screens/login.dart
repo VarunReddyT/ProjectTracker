@@ -11,7 +11,20 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  bool isLoading = false;
+
   void login() async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all the fields'),
+        ),
+      );
+      return;
+    }
+    setState(() {
+      isLoading = true;
+    });
     var url = Uri.parse('https://ps-project-tracker.vercel.app/api/user/login');
     try {
       var response = await http.post(
@@ -34,6 +47,9 @@ class _LoginState extends State<Login> {
           await storage.write(key: 'role', value: responseData['role']);
           await storage.write(key: 'username', value: responseData['username']);
           await storage.write(key: 'email', value: responseData['email']);
+          setState(() {
+            isLoading = false;
+          });
           if (mounted) {
             Navigator.pushReplacementNamed(context, "/admin");
           }
@@ -42,20 +58,36 @@ class _LoginState extends State<Login> {
           await storage.deleteAll();
           await storage.write(key: 'token', value: responseData['token']);
           await storage.write(key: 'role', value: responseData['role']);
-          await storage.write(key: 'studentName', value: responseData['studentName']);
-          await storage.write(key: 'studentYear',value: responseData['studentYear'].toString());
-          await storage.write(key: 'studentBranch', value: responseData['studentBranch']);
-          await storage.write(key: 'studentSection', value: responseData['studentSection']);
-          await storage.write(key: 'studentRollNo', value: responseData['studentRollNo']);
-          await storage.write(key: 'studentSemester',value: responseData['studentSemester'].toString());
-          await storage.write(key: 'inAteam', value: responseData['inAteam'].toString());
+          await storage.write(
+              key: 'studentName', value: responseData['studentName']);
+          await storage.write(
+              key: 'studentYear',
+              value: responseData['studentYear'].toString());
+          await storage.write(
+              key: 'studentBranch', value: responseData['studentBranch']);
+          await storage.write(
+              key: 'studentSection', value: responseData['studentSection']);
+          await storage.write(
+              key: 'studentRollNo', value: responseData['studentRollNo']);
+          await storage.write(
+              key: 'studentSemester',
+              value: responseData['studentSemester'].toString());
+          await storage.write(
+              key: 'inAteam', value: responseData['inAteam'].toString());
           await storage.write(key: 'teamId', value: responseData['teamId']);
-          await storage.write(key: 'projectIds', value: jsonEncode(responseData['projectIds']));
+          await storage.write(
+              key: 'projectIds', value: jsonEncode(responseData['projectIds']));
+          setState(() {
+            isLoading = false;
+          });
           if (mounted) {
             Navigator.pushReplacementNamed(context, "/home");
           }
         }
       } else {
+        setState(() {
+          isLoading = false;
+        });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -111,10 +143,12 @@ class _LoginState extends State<Login> {
                 obscureText: true,
               ),
             ),
-            ElevatedButton(
-              onPressed: () => login(),
-              child: const Text('Login'),
-            ),
+            isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: () => login(),
+                    child: const Text('Login'),
+                  ),
           ],
         )));
   }

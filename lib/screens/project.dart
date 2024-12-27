@@ -39,7 +39,7 @@ class _ProjectState extends State<Project> {
     fetchData();
   }
 
-  void fetchTaskStatus(String? studentRollNo, String? projectId) async {
+  Future<void> fetchTaskStatus(String? studentRollNo, String? projectId) async {
     try {
       var response = await http.get(Uri.parse(
           'https://ps-project-tracker.vercel.app/api/task/getTaskStatuses/$studentRollNo/$projectId'));
@@ -108,7 +108,7 @@ class _ProjectState extends State<Project> {
       }
     }
 
-    fetchTaskStatus(studentRollNo, projectId);
+    await fetchTaskStatus(studentRollNo, projectId);
 
     setState(() {
       this.projectId = projectId;
@@ -396,6 +396,7 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
           visible: _isOpen,
           child: FloatingActionButton(
             onPressed: () {
+              toggle();
               if (index == 0) {
                 projectType == 'Academic'
                     ? Navigator.pushNamed(context, '/milestones')
