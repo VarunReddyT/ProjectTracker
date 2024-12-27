@@ -12,7 +12,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   void login() async {
-    var url = Uri.parse('https://ps-project-tracker.vercel.app//api/user/login');
+    var url = Uri.parse('https://ps-project-tracker.vercel.app/api/user/login');
     try {
       var response = await http.post(
         url,

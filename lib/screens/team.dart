@@ -37,7 +37,7 @@ class _TeamState extends State<Team> {
       var teamId = await storage.read(key: 'teamId');
 
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app//api/team/getStudentDetails/$studentRollNo/$teamId'));
+          'https://ps-project-tracker.vercel.app/api/team/getStudentDetails/$studentRollNo/$teamId'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);

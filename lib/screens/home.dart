@@ -56,7 +56,7 @@ class _HomeState extends State<Home> {
 
     try {
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app//api/project/getOngoingProjects/$studentRollNo'));
+          'https://ps-project-tracker.vercel.app/api/project/getOngoingProjects/$studentRollNo'));
 
       var data = jsonDecode(response.body);
       if (data is List) {

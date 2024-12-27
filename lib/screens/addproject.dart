@@ -35,7 +35,7 @@ class _AddProjectState extends State<AddProject> {
         var studentRollNo = await storage.read(key: 'studentRollNo');
         var response = await http.post(
             Uri.parse(
-                'https://ps-project-tracker.vercel.app//api/project/addPersonalProject/$studentRollNo'),
+                'https://ps-project-tracker.vercel.app/api/project/addPersonalProject/$studentRollNo'),
             headers: {
               'Content-Type': 'application/json',
             },

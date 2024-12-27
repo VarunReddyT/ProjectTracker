@@ -28,7 +28,7 @@ class _AddacademicprojectState extends State<Addacademicproject> {
   void _submitForm() async {
     try {
       var response = await http.post(
-          Uri.parse('https://ps-project-tracker.vercel.app//api/project/addProject'),
+          Uri.parse('https://ps-project-tracker.vercel.app/api/project/addProject'),
           headers: {
             'Content-Type': 'application/json',
           },
