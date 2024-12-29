@@ -14,7 +14,7 @@ class _AddteamState extends State<Addteam> {
 
   final TextEditingController _teamNameController = TextEditingController();
   final TextEditingController _teamMembersController = TextEditingController();
-
+  int? studentsYear;
   void addTeam() async {
     try{
       var response = await http.post(Uri.parse('https://ps-project-tracker.vercel.app/api/team/addTeam'), headers: {
@@ -22,6 +22,7 @@ class _AddteamState extends State<Addteam> {
       }, body: jsonEncode({
         'teamName': _teamNameController.text,
         'teamMembers': _teamMembers,
+        'studentsYear': studentsYear,
       }));
 
       if(response.statusCode == 200){
@@ -70,6 +71,29 @@ class _AddteamState extends State<Addteam> {
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: DropdownButtonFormField<int>(
+                decoration: const InputDecoration(
+                  labelText: 'Select Year',
+                  border: OutlineInputBorder(),
+                ),
+                value: studentsYear,
+                onChanged: (int? value) {
+                  setState(() {
+                    studentsYear = value;
+                  });
+                },
+                items: <int>[1, 2, 3, 4].map((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text(value.toString()),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 25),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
@@ -88,7 +112,7 @@ class _AddteamState extends State<Addteam> {
                     onPressed: () {
                       if (_teamMembersController.text.isNotEmpty) {
                         setState(() {
-                          _teamMembers.add(_teamMembersController.text);
+                          _teamMembers.add(_teamMembersController.text.toUpperCase());
                           _teamMembersController.clear();
                         });
                       }

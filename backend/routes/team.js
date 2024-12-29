@@ -4,12 +4,13 @@ const Project = require('../models/project');
 const {Student} = require('../models/user');
 
 router.post('/addTeam', async (req, res) => {
-    const {teamName, teamMembers} = req.body;
+    const {teamName, teamMembers, studentsYear} = req.body;
 
     try{
         const team = new Team({
             teamName: teamName,
-            teamMembers: teamMembers
+            teamMembers: teamMembers,
+            studentsYear: studentsYear
         });
         const savedTeam = await team.save();
 
