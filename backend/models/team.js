@@ -17,8 +17,7 @@ const TeamSchema = new mongoose.Schema({
         ref : 'Project'
     },
     studentsYear: {
-        type: Number,
-        required: true
+        type: Number
     },
 });
 

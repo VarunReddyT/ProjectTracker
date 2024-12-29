@@ -180,7 +180,6 @@ class _AddProjectState extends State<AddProject> {
                 ),
                 const SizedBox(height: 16),
 
-                // Submit Button
                 Center(
                   child: ElevatedButton(
                     onPressed: _submitForm,
