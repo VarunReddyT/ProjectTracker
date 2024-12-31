@@ -4,8 +4,6 @@ const TaskSchema = new mongoose.Schema({
     taskName: {
         type: String,
         required: true,
-        min: 3,
-        max: 50
     },
     taskDescription: {
         type: String,
