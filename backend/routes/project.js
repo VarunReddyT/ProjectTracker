@@ -228,7 +228,7 @@ router.get('/getTeamProjects/:teamId', async (req, res) => {
     }
 });
 
-router.get('/getProjects/:teamYear', async (req, res) => {
+router.get('/getYearProjects/:teamYear', async (req, res) => {
     try {
         const projects = await Project.find({
             teamYear: req.params.teamYear

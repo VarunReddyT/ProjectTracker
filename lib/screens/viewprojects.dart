@@ -15,6 +15,10 @@ class _ViewprojectsState extends State<Viewprojects> {
     try {
       var response = await http.get(Uri.parse(
           'https://ps-project-tracker.vercel.app/api/project/getProjects/$year'));
+          if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response.body)));
+          }
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         setState(() {
