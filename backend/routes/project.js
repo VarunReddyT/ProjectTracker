@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const Project = require('../models/project');
 const Team = require('../models/team');
-const {BaseUser,Student} = require('../models/user');
+const { BaseUser, Student } = require('../models/user');
 
 router.post('/addProject', async (req, res) => {
     // if(req.user.role !== "admin"){
@@ -9,12 +9,13 @@ router.post('/addProject', async (req, res) => {
     // }
     try {
         const project = new Project({
-            projectTitle : req.body.projectTitle,
+            projectTitle: req.body.projectTitle,
             projectType: 'Academic',
             projectDescription: req.body.projectDescription,
             projectDomain: req.body.projectDomain,
-            projectTechnologies : req.body.projectTechnologies,
-            teamId : null,
+            projectTechnologies: req.body.projectTechnologies,
+            teamId: null,
+
         });
         const savedProject = await project.save();
 
@@ -24,20 +25,20 @@ router.post('/addProject', async (req, res) => {
     }
 });
 
-router.post('/addPersonalProject/:studentRollNo',async(req,res)=>{
-    try{
+router.post('/addPersonalProject/:studentRollNo', async (req, res) => {
+    try {
         console.log(req.body);
         const project = new Project({
-            projectTitle : req.body.projectTitle,
+            projectTitle: req.body.projectTitle,
             projectType: 'Personal',
             projectDescription: req.body.projectDescription,
             projectDomain: req.body.projectDomain,
-            studentRollNo : req.params.studentRollNo,
-            projectTechnologies : req.body.projectTechnologies,
-            projectStatus : 'Ongoing',
+            studentRollNo: req.params.studentRollNo,
+            projectTechnologies: req.body.projectTechnologies,
+            projectStatus: 'Ongoing',
         })
         const savedProject = await project.save();
-        const user = await BaseUser.findOne({studentRollNo : req.params.studentRollNo});
+        const user = await BaseUser.findOne({ studentRollNo: req.params.studentRollNo });
         if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
@@ -46,7 +47,7 @@ router.post('/addPersonalProject/:studentRollNo',async(req,res)=>{
         console.log(savedProject);
         res.status(200).send(savedProject);
     }
-    catch(err){
+    catch (err) {
         res.status(500).send(err);
     }
 })
@@ -65,6 +66,7 @@ router.post('/assignProject/:teamId', async (req, res) => {
         project.teamId = req.params.teamId;
         project.projectStatus = 'Ongoing';
         project.projectStartDate = new Date();
+        project.teamYear = req.body.teamYear;
         const savedProject = await project.save();
 
         const team = await Team.findOne({
@@ -87,7 +89,7 @@ router.post('/assignProject/:teamId', async (req, res) => {
             user.projectIds.push(req.body.projectId);
             await user.save();
         }
-        res.status(200).send({savedProject,savedTeam});
+        res.status(200).send({ savedProject, savedTeam });
     } catch (err) {
         res.status(400).send(err);
     }
@@ -119,8 +121,8 @@ router.get('/getProjects/:studentRollNo', async (req, res) => {
         const projects = await Project.find({
             _id: { $in: user.projectIds }
         });
-        if(!projects){
-            res.status(200).send({message : "No current projects"})
+        if (!projects) {
+            res.status(200).send({ message: "No current projects" })
         }
         res.status(200).send(projects);
     } catch (err) {
@@ -134,9 +136,9 @@ router.get('/getOngoingProjects/:studentRollNo', async (req, res) => {
             studentRollNo: req.params.studentRollNo
         });
         if (!user) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "User not found" 
+            return res.status(400).json({
+                success: false,
+                message: "User not found"
             });
         }
         const projects = await Project.find({
@@ -155,21 +157,21 @@ router.get('/getOngoingProjects/:studentRollNo', async (req, res) => {
                     _id: projects[i].teamId
                 });
                 if (!team) {
-                    return res.status(400).json({ 
-                        success: false, 
-                        message: "Team not found" 
+                    return res.status(400).json({
+                        success: false,
+                        message: "Team not found"
                     });
                 }
-                
+
                 if (team.teamMembers.includes(req.params.studentRollNo)) {
                     studentProjects.push(projects[i]);
                 }
             }
-            else if(projects[i].studentRollNo === req.params.studentRollNo){
+            else if (projects[i].studentRollNo === req.params.studentRollNo) {
                 studentProjects.push(projects[i]);
             }
-        }     
-        res.status(200).send(studentProjects);   
+        }
+        res.status(200).send(studentProjects);
     } catch (err) {
         res.status(400).send(err);
     }
@@ -197,7 +199,7 @@ router.get('/getUnassignedProjects', async (req, res) => {
     try {
         const projects = await Project.find({
             projectStatus: 'Unassigned',
-            studentRollNo : null
+            studentRollNo: null
         });
         res.status(200).send(projects);
     } catch (err) {
@@ -226,5 +228,15 @@ router.get('/getTeamProjects/:teamId', async (req, res) => {
     }
 });
 
+router.get('/getProjects/:teamYear', async (req, res) => {
+    try {
+        const projects = await Project.find({
+            teamYear: req.params.teamYear
+        });
+        res.status(200).send(projects);
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
 
 module.exports = router;

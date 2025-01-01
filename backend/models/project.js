@@ -43,6 +43,10 @@ const ProjectSchema = new mongoose.Schema({
     studentRollNo : {
         type : String,
         default : null
+    },
+    teamYear : {
+        type : Number,
+        default : null
     }
 });
 
