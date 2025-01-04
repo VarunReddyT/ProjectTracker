@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const milestone = require('./milestone');
 
 const ProjectSchema = new mongoose.Schema({
     projectTitle: {
@@ -47,7 +48,27 @@ const ProjectSchema = new mongoose.Schema({
     teamYear : {
         type : Number,
         default : null
-    }
+    },
+    milestones : [{
+        milestoneId : {
+            type : mongoose.Schema.Types.ObjectId,
+            ref : 'Milestone'
+        },
+        studentDetails : [{
+            studentRollNo : {
+                type : String,
+                default : null
+            },
+            mileStoneUrl : {
+                type : String,
+                default : null
+            },
+            mileStoneStatus : {
+                type : Boolean,
+                default : false
+            }
+        }]
+    }]
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);

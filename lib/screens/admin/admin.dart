@@ -74,7 +74,8 @@ class _AdminState extends State<Admin> {
           ],
         ),
       ),
-      body: Padding(
+      body: 
+      Padding(
         padding: const EdgeInsets.fromLTRB(13.0, 20, 13.0, 20),
         child: GridView.count(
           crossAxisCount: 2,
@@ -85,7 +86,7 @@ class _AdminState extends State<Admin> {
             _buildGridItem('Add Project', Icons.add_circle_outline_rounded, context, "/addAcademicProject"),
             _buildGridItem('Add Student', Icons.person_add_alt_1_outlined, context, "/addStudent"),
             _buildGridItem('Assign Project', Icons.assignment_turned_in_outlined, context, "/assignProject"),
-            _buildGridItem('Add Milestone', Icons.flag_outlined, context, "/addMilestone"),
+            _buildGridItem('Milestones', Icons.flag_outlined, context, "/addMilestone"),
             _buildGridItem('Add Team', Icons.group_add_outlined, context, "/addTeam"),
             _buildGridItem('View Teams', Icons.groups_outlined, context, "/viewTeams"),
             _buildGridItem('View Projects', Icons.grid_view_outlined, context, "/viewProjects"),

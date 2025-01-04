@@ -23,21 +23,7 @@ const MilestoneSchema = new mongoose.Schema({
     projectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref : 'Project',
-    },
-    studentDetails :[{
-        studentRollNo : {
-            type : String
-        },
-        mileStoneUrl : {
-            type : String,
-            default : null
-        },
-        mileStoneStatus : {
-            type : Boolean,
-            default : false
-        }
-
-    }]
+    }
 });
 
 module.exports = mongoose.model('Milestone', MilestoneSchema);
