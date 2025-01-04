@@ -18,6 +18,7 @@ class _AssignProjectState extends State<AssignProject> {
   final List<dynamic> projects = [];
 
   bool isLoading = false;
+  bool teamsLoaded = false;
 
   @override
   void initState() {
@@ -39,8 +40,10 @@ class _AssignProjectState extends State<AssignProject> {
             teams.add(team['teamName']);
           }
           teamData.addAll(data);
+          teamsLoaded = true;
           selectedTeam = null;
         });
+        debugPrint(data.toString());
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -124,7 +127,7 @@ class _AssignProjectState extends State<AssignProject> {
                 },
               ),
               const SizedBox(height: 20),
-              teams.isEmpty
+              !teamsLoaded
                   ? const Center(child: Text('No teams available'))
                   :
               DropdownButtonFormField<String>(
