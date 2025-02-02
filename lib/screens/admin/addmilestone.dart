@@ -53,9 +53,10 @@ class _AddmilestoneState extends State<Addmilestone> {
     }
   }
 
-  void handleSearch(String projectId) async {
+  void handleSearch(String projectId, String projectTitle) async {
     var storage = const FlutterSecureStorage();
     await storage.write(key: 'currentProjectId', value: projectId);
+    await storage.write(key: 'currentProjectTitle', value: projectTitle);
     if(mounted){
       Navigator.pushNamed(context, '/viewProjectMilestones');
     }
@@ -76,7 +77,7 @@ class _AddmilestoneState extends State<Addmilestone> {
     }
   }
 
-  void showMilestoneModal(String projectId) {
+  void showMilestoneModal(String projectId, String projectTitle) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -199,8 +200,7 @@ class _AddmilestoneState extends State<Addmilestone> {
               right: 20,
               child: FloatingActionButton(
                 onPressed: () {
-                  // Handle FAB action, e.g., adding a quick milestone
-                  Navigator.pop(context); // Close modal
+                  handleSearch(projectId, projectTitle);
                 },
                 child: const Icon(Icons.manage_search_rounded),
               ),
@@ -280,7 +280,7 @@ class _AddmilestoneState extends State<Addmilestone> {
                                 ),
                                 trailing: const Icon(Icons.arrow_forward_ios),
                                 onTap: () {
-                                  showMilestoneModal(projects[index]['_id']);
+                                  showMilestoneModal(projects[index]['_id'], projects[index]['projectTitle']);
                                 },
                               ),
                             );
