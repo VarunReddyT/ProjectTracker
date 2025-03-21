@@ -110,8 +110,9 @@ class _ViewprojectsState extends State<Viewprojects> {
                 const SizedBox(height: 8),
                 Text(
                   project['projectType'] == 'Academic'
-                      ? 'Team: ${project['teamName']}'
-                      : 'Student Roll No: ${project['studentRollNo']}',
+                      ? 'Team: ${project['teamId']['teamName']}'
+                      : 'Student Roll No : ${project['studentRollNo']}',
+
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.black54,

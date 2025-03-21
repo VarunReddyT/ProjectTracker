@@ -93,6 +93,56 @@ class _AssignProjectState extends State<AssignProject> {
     }
   }
 
+  void handleAssign(dynamic project) async {
+    if (selectedYear == null || selectedTeam == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select year and team')));
+      return;
+    }
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      var teamId = teamData.firstWhere((team) => team['teamName'] == selectedTeam)['_id'];
+      var response = await http.post(
+          Uri.parse(
+              'https://ps-project-tracker.vercel.app/api/project/assignProject/$teamId'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'projectId': project['_id'],
+            'teamYear': selectedYear,
+          }));
+      print(response.body);
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Project assigned successfully')));
+          fetchProjects();
+        }
+      } else {
+        if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to assign project')));
+        }
+      }
+    } catch (e) {
+      if(mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to assign project: $e')));
+      }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+      if(mounted){
+        Navigator.pop(context);
+      }
+    }
+  }
+
   void showAssignModal(dynamic project) {
     showDialog(
       context: context,
@@ -129,30 +179,29 @@ class _AssignProjectState extends State<AssignProject> {
               const SizedBox(height: 20),
               !teamsLoaded
                   ? const Center(child: Text('No teams available'))
-                  :
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Select Team',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 15.0, horizontal: 10.0),
-                ),
-                value: selectedTeam,
-                hint: const Text('Team'),
-                items: teams.map((String team) {
-                  return DropdownMenuItem<String>(
-                    value: team,
-                    child: Text(team),
-                  );
-                }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    selectedTeam = value;
-                  });
-                },
-              ),
+                  : DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Select Team',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15.0, horizontal: 10.0),
+                      ),
+                      value: selectedTeam,
+                      hint: const Text('Team'),
+                      items: teams.map((String team) {
+                        return DropdownMenuItem<String>(
+                          value: team,
+                          child: Text(team),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedTeam = value;
+                        });
+                      },
+                    ),
             ],
           ),
           actions: [
@@ -164,8 +213,7 @@ class _AssignProjectState extends State<AssignProject> {
             ),
             TextButton(
               onPressed: () {
-
-                // ^^^^ To do: Assign project to selected team
+                handleAssign(project);
               },
               child: const Text('Assign'),
             ),
@@ -220,7 +268,8 @@ class _AssignProjectState extends State<AssignProject> {
                                       ),
                                       const SizedBox(height: 10),
                                       Text(
-                                        project['projectDescription'] ?? 'No description',
+                                        project['projectDescription'] ??
+                                            'No description',
                                         style:
                                             const TextStyle(color: Colors.grey),
                                       ),

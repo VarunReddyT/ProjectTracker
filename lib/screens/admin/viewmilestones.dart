@@ -61,8 +61,8 @@ class _ViewmilestonesState extends State<Viewmilestones> {
             child: Column(children: <Widget>[
           milestones.isEmpty
               ? const Center(
-                  child: CircularProgressIndicator(),
-              )
+                  child: Text('No milestones found'),
+                )
               : Column(
                   children: milestones.map((milestone) {
                     return Card(
