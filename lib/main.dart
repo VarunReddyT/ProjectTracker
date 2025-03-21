@@ -15,7 +15,7 @@ import 'package:project_tracker/screens/admin/assignproject.dart';
 import 'package:project_tracker/screens/admin/viewprojects.dart';
 import 'package:project_tracker/screens/admin/viewteams.dart';
 import 'package:project_tracker/screens/admin/addstudent.dart';
-import 'package:project_tracker/screens/student/settings.dart';
+import 'package:project_tracker/screens/settings.dart';
 import 'package:project_tracker/screens/admin/viewmilestones.dart';
 
 
@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
         '/addProject': (context) => const AddProject(),
         '/share': (context) => const Share(),
         '/team': (context) => const Team(),
+        
         '/settings': (context) => const Settings(),
 
         '/admin': (context) => const Admin(),

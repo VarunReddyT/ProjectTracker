@@ -55,7 +55,9 @@ class _AdminState extends State<Admin> {
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('Settings'),
-              onTap: () => Navigator.pop(context),
+              onTap: () => {
+                Navigator.pushNamed(context, '/settings'),
+              }
             ),
             const Divider(),
             ListTile(

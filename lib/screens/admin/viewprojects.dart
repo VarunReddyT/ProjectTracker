@@ -13,6 +13,7 @@ class _ViewprojectsState extends State<Viewprojects> {
   List<dynamic> projects = [];
   bool isLoading = false;
   bool isInit = true;
+
   void fetchProjects(int year) async {
     setState(() {
       isLoading = true;
@@ -45,15 +46,109 @@ class _ViewprojectsState extends State<Viewprojects> {
     }
   }
 
+  void _showProjectDetailsModal(BuildContext context, dynamic project) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  project['projectTitle'],
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Type: ${project['projectType']}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Description: ${project['projectDescription']}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Domain: ${project['projectDomain']}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Technologies: ${project['projectTechnologies'].join(', ')}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Status: ${project['projectStatus']}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  project['projectType'] == 'Academic'
+                      ? 'Team: ${project['teamName']}'
+                      : 'Student Roll No: ${project['studentRollNo']}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Team Year: ${project['teamYear'] ?? 'N/A'}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Projects"),
-          centerTitle: true,
-        ),
-        body: SingleChildScrollView(
-            child: Column(
+      appBar: AppBar(
+        title: const Text("Projects"),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
@@ -124,13 +219,16 @@ class _ViewprojectsState extends State<Viewprojects> {
                               ),
                               trailing: const Icon(Icons.arrow_forward_ios),
                               onTap: () {
-                                // Add your onTap functionality here
+                                _showProjectDetailsModal(
+                                    context, projects[index]);
                               },
                             ),
                           );
                         },
                       ),
           ],
-        )));
+        ),
+      ),
+    );
   }
 }

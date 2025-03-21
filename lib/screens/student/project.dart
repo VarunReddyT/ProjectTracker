@@ -378,7 +378,7 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
           right: 20,
           child: FloatingActionButton(
             onPressed: toggle,
-            child: Icon(_isOpen ? Icons.close : Icons.more_horiz_outlined),
+            child: Icon(_isOpen ? Icons.close : Icons.more_vert_rounded),
           ),
         ),
       ],

@@ -232,7 +232,7 @@ router.get('/getYearProjects/:teamYear', async (req, res) => {
     try {
         const projects = await Project.find({
             teamYear: req.params.teamYear
-        });
+        }).populate('teamId');
         res.status(200).send(projects);
     } catch (err) {
         res.status(400).send(err);
