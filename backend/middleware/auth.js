@@ -10,7 +10,7 @@ module.exports = async (req, res, next) => {
     return res.status(401).send('Access Denied: No token provided');
   }
   try {
-    const secretKey = "varun";
+    const secretKey = process.env.JWT_SECRET;
     const verified = jwt.verify(token, secretKey); 
     req.user = verified;
     next();
