@@ -1,8 +1,6 @@
 const { Message, ChatRoom } = require('../models/chat');
-const { getIO } = require('../socket');
 
-const SocketRoutes = () => {
-    const io = getIO();
+const SocketRoutes = (io) => {
     io.on("connection", (socket) => {
         console.log(`User connected : ${socket.id}`);
 
@@ -91,4 +89,4 @@ const SocketRoutes = () => {
     })
 }
 
-module.exports = SocketRoutes;
+module.exports = { SocketRoutes };

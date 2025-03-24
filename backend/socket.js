@@ -7,6 +7,10 @@ const initSocket = (server) => {
     cors: {
       origin: '*',
     },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
+    allowUpgrades: true,
+    perMessageDeflate: false,
   });
 
   return io;

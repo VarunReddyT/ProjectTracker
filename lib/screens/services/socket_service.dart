@@ -1,43 +1,64 @@
+import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-class SocketService {
+class SocketService with ChangeNotifier{
   late IO.Socket socket;
+  bool isConnected = false;
 
-  // Connect to the Socket.IO server
+  SocketService(String url) {
+    connect(url);
+  }
+
   void connect(String url) {
-    socket = IO.io(url, <String, dynamic>{
-      'transports': ['websocket'], // Use WebSocket transport
-      'autoConnect': true, // Automatically connect
-    });
+    try {
+      socket = IO.io(
+        url,
+        IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setQuery({'platform': 'flutter'})
+          .build(),
+      );
 
-    // Listen for connection event
-    socket.onConnect((_) {
-      print('Connected to Socket.IO server');
-    });
+      socket.onConnect((_) {
+        isConnected = true;
+        notifyListeners();
+        print('Connected');
+      });
 
-    // Listen for disconnection event
-    socket.onDisconnect((_) {
-      print('Disconnected from Socket.IO server');
-    });
+      socket.onDisconnect((_) {
+        isConnected = false;
+        notifyListeners();
+        print('Disconnected');
+      });
 
-    // Handle connection errors
-    socket.onError((error) {
-      print('Socket.IO error: $error');
-    });
+      socket.connect();
+    } catch (e) {
+      print('Connection error: $e');
+    }
   }
 
-  // Send a message to the server
   void sendMessage(String event, dynamic data) {
-    socket.emit(event, data);
+    if (isConnected) {
+      socket.emit(event, data);
+    } else {
+      print('Not connected to the server');
+    }
   }
 
-  // Listen for messages from the server
   void onMessage(String event, Function(dynamic) callback) {
-    socket.on(event, callback);
+    socket.on(event, (data) {
+      try {
+        callback(data);
+      } catch (e) {
+        print('Message handling error: $e');
+      }
+    });
   }
 
-  // Disconnect from the server
   void disconnect() {
-    socket.disconnect();
+    if (isConnected) {
+      socket.disconnect();
+      isConnected = false;
+    }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'socket_service.dart'; // Import the SocketService
+import 'package:provider/provider.dart';
+import 'socket_service.dart';
 
 class ChatScreen extends StatefulWidget {
   @override
@@ -7,22 +8,32 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final SocketService _socketService = SocketService();
+  late final SocketService _socketService;
   final TextEditingController _controller = TextEditingController();
   List<String> messages = [];
+  bool isConnected = false;
 
   @override
   void initState() {
     super.initState();
-    // Connect to the Socket.IO server
-    _socketService.connect('http://localhost:4000');
+    _socketService = Provider.of<SocketService>(context, listen: false);
+    _socketService.connect('http://192.168.0.156:4000');
+    _setupSocket();
+  }
 
-    // Listen for incoming chat messages
+  void _setupSocket() {
+    _socketService.connect('http://192.168.0.156:4000');
     _socketService.onMessage('chat_message', (data) {
-      setState(() {
-        messages.add(data);
-      });
+      if (data is String) {
+        setState(() => messages.add(data));
+      }
     });
+  }
+
+  void _sendMessage() {
+    if (_controller.text.trim().isEmpty) return;
+    _socketService.sendMessage('chat_message', _controller.text.trim());
+    _controller.clear();
   }
 
   @override
@@ -34,11 +45,9 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: ListView.builder(
               itemCount: messages.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(messages[index]),
-                );
-              },
+              itemBuilder: (_, index) => ListTile(
+                title: Text(messages[index]),
+              ),
             ),
           ),
           Padding(
@@ -48,16 +57,16 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    decoration: InputDecoration(labelText: 'Type a message'),
+                    decoration: InputDecoration(
+                      labelText: 'Type a message',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
                 IconButton(
                   icon: Icon(Icons.send),
-                  onPressed: () {
-                    // Send the message to the server
-                    _socketService.sendMessage('chat_message', _controller.text);
-                    _controller.clear();
-                  },
+                  onPressed: _sendMessage,
                 ),
               ],
             ),
@@ -69,8 +78,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    // Disconnect from the Socket.IO server
     _socketService.disconnect();
+    _controller.dispose();
     super.dispose();
   }
 }
