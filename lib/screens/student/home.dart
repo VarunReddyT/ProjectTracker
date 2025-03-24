@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:project_tracker/screens/login.dart';
 
@@ -24,18 +24,16 @@ class _HomeState extends State<Home> {
   }
 
   void goToProject(Map<String, dynamic> project) async {
-    const storage = FlutterSecureStorage();
-    await storage.write(key: 'projectId', value: project['_id']);
-    await storage.write(key: 'projectTitle', value: project['projectTitle']);
-    await storage.write(
-        key: 'projectDescription', value: project['projectDescription']);
-    await storage.write(key: 'projectStatus', value: project['projectStatus']);
-    await storage.write(key: 'projectDomain', value: project['projectDomain']);
-    await storage.write(key: 'projectType', value: project['projectType']);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('projectId', project['_id']);
+    await prefs.setString('projectTitle', project['projectTitle']);
+    await prefs.setString('projectDescription', project['projectDescription']);
+    await prefs.setString('projectStatus', project['projectStatus']); 
+    await prefs.setString('projectDomain', project['projectDomain']);
+    await prefs.setString('projectType', project['projectType']);
     if (project['studentRollNo'] == null) {
-      await storage.write(key: 'teamId', value: project['teamId']);
-      await storage.write(
-          key: 'projectStartDate', value: project['projectStartDate']);
+      await prefs.setString('teamId', project['teamId']); 
+      await prefs.setString('projectStartDate', project['projectStartDate']); 
     }
     if (mounted) {
       Navigator.pushNamed(context, '/project');
@@ -50,9 +48,18 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> fetchData() async {
-    const storage = FlutterSecureStorage();
-    studentRollNo = await storage.read(key: 'studentRollNo');
-    studentName = await storage.read(key: 'studentName');
+    final prefs = await SharedPreferences.getInstance();
+    studentRollNo = prefs.getString('studentRollNo');
+    studentName = prefs.getString('studentName');
+
+    if (studentRollNo == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Student data not found. Please log in again.')),
+        );
+      }
+      return;
+    }
 
     try {
       var response = await http.get(Uri.parse(
@@ -117,9 +124,9 @@ class _HomeState extends State<Home> {
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                const storage = FlutterSecureStorage();
-                storage.deleteAll();
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const Login()),

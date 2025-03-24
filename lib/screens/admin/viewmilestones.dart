@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Viewmilestones extends StatefulWidget {
   const Viewmilestones({super.key});
@@ -21,12 +21,25 @@ class _ViewmilestonesState extends State<Viewmilestones> {
   String? projectTitle;
 
   void fetchMilestones() async {
-    const storage = FlutterSecureStorage();
-    var projectId = await storage.read(key: 'currentProjectId');
-    var title = await storage.read(key: 'currentProjectTitle');
+    final prefs =
+        await SharedPreferences.getInstance(); // Use SharedPreferences
+    var projectId = prefs.getString('currentProjectId'); // Read project ID
+    var title = prefs.getString('currentProjectTitle'); // Read project title
+
+    if (projectId == null || title == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Project data not found. Please try again.')),
+        );
+      }
+      return;
+    }
+
     setState(() {
       projectTitle = title;
     });
+
     try {
       var response = await http.get(Uri.parse(
           'https://ps-project-tracker.vercel.app/api/milestone/getMilestone/$projectId'));
@@ -54,7 +67,9 @@ class _ViewmilestonesState extends State<Viewmilestones> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(projectTitle ?? 'Milestones', style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+          title: Text(projectTitle ?? 'Milestones',
+              style:
+                  const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
           centerTitle: true,
         ),
         body: SingleChildScrollView(

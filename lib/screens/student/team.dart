@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class Team extends StatefulWidget {
@@ -21,8 +21,8 @@ class _TeamState extends State<Team> {
   }
 
   void fetchTeam() async {
-    const storage = FlutterSecureStorage();
-    var teamMembersString = await storage.read(key: 'teamMembers');
+    final prefs = await SharedPreferences.getInstance();
+    var teamMembersString = prefs.getString('teamMembers');
     setState(() {
       teamMembers = teamMembersString != null
           ? List<String>.from(jsonDecode(teamMembersString))
@@ -33,8 +33,8 @@ class _TeamState extends State<Team> {
 
   void getStudentDetails(studentRollNo) async {
     try {
-      const storage = FlutterSecureStorage();
-      var teamId = await storage.read(key: 'teamId');
+      final prefs = await SharedPreferences.getInstance(); 
+      var teamId = prefs.getString('teamId');
 
       var response = await http.get(Uri.parse(
           'https://ps-project-tracker.vercel.app/api/team/getStudentDetails/$studentRollNo/$teamId'));

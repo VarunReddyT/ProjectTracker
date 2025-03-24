@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -74,16 +74,16 @@ class _ProjectState extends State<Project> {
     setState(() {
       _isLoading = true;
     });
-    const storage = FlutterSecureStorage();
-    var projectId = await storage.read(key: 'projectId');
-    var projectTitle = await storage.read(key: 'projectTitle');
-    var projectDescription = await storage.read(key: 'projectDescription');
-    var projectStatus = await storage.read(key: 'projectStatus');
-    var projectDomain = await storage.read(key: 'projectDomain');
-    var teamId = await storage.read(key: 'teamId');
-    var projectStartDate = await storage.read(key: 'projectStartDate');
-    var projectType = await storage.read(key: 'projectType');
-    String? studentRollNo = await storage.read(key: 'studentRollNo');
+    final prefs = await SharedPreferences.getInstance();
+    var projectId = prefs.getString('projectId'); 
+    var projectTitle = prefs.getString('projectTitle'); 
+    var projectDescription = prefs.getString('projectDescription'); 
+    var projectStatus = prefs.getString('projectStatus');
+    var projectDomain = prefs.getString('projectDomain'); 
+    var teamId = prefs.getString('teamId');
+    var projectStartDate = prefs.getString('projectStartDate');
+    var projectType = prefs.getString('projectType'); 
+    String? studentRollNo = prefs.getString('studentRollNo');
 
     if (teamId != null) {
       try {
@@ -95,7 +95,7 @@ class _ProjectState extends State<Project> {
           for (var member in data[0]['teamMembers']) {
             teamMembers.add(member.toString());
           }
-          await storage.write(key: 'teamMembers', value: jsonEncode(teamMembers));
+          await prefs.setString('teamMembers', jsonEncode(teamMembers)); // Save team members
         }
       } catch (e) {
         if (mounted) {
@@ -131,14 +131,14 @@ class _ProjectState extends State<Project> {
   }
 
   void clearStorage() async {
-    const storage = FlutterSecureStorage();
-    await storage.delete(key: 'projectId');
-    await storage.delete(key: 'projectTitle');
-    await storage.delete(key: 'projectDescription');
-    await storage.delete(key: 'projectStatus');
-    await storage.delete(key: 'projectDomain');
-    await storage.delete(key: 'teamId');
-    await storage.delete(key: 'projectStartDate');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('projectId');
+    await prefs.remove('projectTitle'); 
+    await prefs.remove('projectDescription');
+    await prefs.remove('projectStatus');
+    await prefs.remove('projectDomain'); 
+    await prefs.remove('teamId');
+    await prefs.remove('projectStartDate'); 
   }
 
   @override
@@ -339,10 +339,9 @@ class _ExpandableFabState extends State<ExpandableFab> with TickerProviderStateM
   String? projectType;
 
   void fetchData() async {
-    const storage = FlutterSecureStorage();
-    var projectType = await storage.read(key: 'projectType');
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      this.projectType = projectType;
+      projectType = prefs.getString('projectType');
     });
   }
 
