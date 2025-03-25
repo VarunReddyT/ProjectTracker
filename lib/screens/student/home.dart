@@ -16,6 +16,8 @@ class _HomeState extends State<Home> {
   bool _isLoading = true;
   String? studentRollNo;
   String? studentName;
+  String? userId;
+  List<dynamic> chatRooms = [];
 
   @override
   void initState() {
@@ -46,12 +48,35 @@ class _HomeState extends State<Home> {
       fetchData();
     }
   }
-
+  Future<void> fetchChatRooms() async{
+    if(userId == null){
+      return;
+    }
+    try{
+      var response = await http.get(Uri.parse('https://ps-project-tracker.vercel.app/api/user/getChatIds/$userId'));
+      var data = jsonDecode(response.body);
+      if(data is List){
+        setState(() {
+          chatRooms = List<Map<String,dynamic>>.from(data);
+        });
+      }
+      if(mounted){
+        Navigator.pushNamed(context, '/chat',arguments: chatRooms[0]);
+      }
+    }
+    catch(e){
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error : $e"))
+        );
+      }
+    }
+  }
   Future<void> fetchData() async {
     final prefs = await SharedPreferences.getInstance();
     studentRollNo = prefs.getString('studentRollNo');
     studentName = prefs.getString('studentName');
-
+    userId = prefs.getString('studentId');
     if (studentRollNo == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -179,7 +204,7 @@ class _HomeState extends State<Home> {
       // ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, '/chat');
+          fetchChatRooms();
         },
         child : const Icon(Icons.add),
       ),

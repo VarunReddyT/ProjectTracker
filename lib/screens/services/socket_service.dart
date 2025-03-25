@@ -43,6 +43,7 @@ class SocketService with ChangeNotifier{
     } else {
       print('Not connected to the server');
     }
+    // print('Sending message');
   }
 
   void onMessage(String event, Function(dynamic) callback) {

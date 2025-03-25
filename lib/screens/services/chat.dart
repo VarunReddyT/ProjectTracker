@@ -8,23 +8,16 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late final SocketService _socketService;
   final TextEditingController _controller = TextEditingController();
-  List<String> messages = [];
-  bool isConnected = false;
+  final List<String> messages = [];
 
   @override
   void initState() {
     super.initState();
-    _socketService = Provider.of<SocketService>(context, listen: false);
-    _socketService.connect('http://192.168.0.156:4000');
-    _setupSocket();
-  }
+    final socketService = Provider.of<SocketService>(context, listen: false);
 
-  void _setupSocket() {
-    _socketService.connect('http://192.168.0.156:4000');
-    _socketService.onMessage('chat_message', (data) {
-      if (data is String) {
+    socketService.onMessage('chat_message', (data) {
+      if (data is String && mounted) {
         setState(() => messages.add(data));
       }
     });
@@ -32,16 +25,31 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     if (_controller.text.trim().isEmpty) return;
-    _socketService.sendMessage('chat_message', _controller.text.trim());
+
+    final socketService = Provider.of<SocketService>(context, listen: false);
+    socketService.sendMessage('chat_message', _controller.text.trim());
     _controller.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Chat')),
+      appBar: AppBar(title: const Text('Chat')),
       body: Column(
         children: [
+          Consumer<SocketService>(
+            builder: (context, socketService, child) {
+              return Chip(
+                label: Text(
+                  socketService.isConnected ? 'Connected' : 'Disconnected',
+                  style: TextStyle(
+                    color:
+                        socketService.isConnected ? Colors.green : Colors.red,
+                  ),
+                ),
+              );
+            },
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: messages.length,
@@ -57,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Type a message',
                       border: OutlineInputBorder(),
                     ),
@@ -65,7 +73,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.send),
+                  icon: const Icon(Icons.send),
                   onPressed: _sendMessage,
                 ),
               ],
@@ -78,7 +86,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _socketService.disconnect();
     _controller.dispose();
     super.dispose();
   }

@@ -25,7 +25,7 @@ import 'package:project_tracker/screens/services/chat.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (context) => SocketService('http://192.168.0.156:4000'),
+      create: (context) => SocketService('http://192.168.51.84:4000'),
       child: const MyApp(),
     ),
   );

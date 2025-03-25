@@ -57,6 +57,7 @@ class _LoginState extends State<Login> {
         } else {
           await prefs.clear(); // Clear all stored data
           await prefs.setString('token', responseData['token']);
+          await prefs.setString('studentId',responseData['id']);
           await prefs.setString('role', responseData['role']);
           await prefs.setString('studentName', responseData['studentName']);
           await prefs.setString(
