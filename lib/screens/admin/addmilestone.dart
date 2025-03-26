@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Addmilestone extends StatefulWidget {
   const Addmilestone({super.key});
@@ -54,13 +54,13 @@ class _AddmilestoneState extends State<Addmilestone> {
   }
 
   void handleSearch(String projectId, String projectTitle) async {
-    var storage = const FlutterSecureStorage();
-    await storage.write(key: 'currentProjectId', value: projectId);
-    await storage.write(key: 'currentProjectTitle', value: projectTitle);
-    if(mounted){
-      Navigator.pushNamed(context, '/viewProjectMilestones');
-    }
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('currentProjectId', projectId); 
+  await prefs.setString('currentProjectTitle', projectTitle); 
+  if (mounted) {
+    Navigator.pushNamed(context, '/viewProjectMilestones');
   }
+}
 
   Future<void> _pickDate(TextEditingController controller) async {
     DateTime? pickedDate = await showDatePicker(

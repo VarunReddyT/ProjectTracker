@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { BaseUser, Student, Admin} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { ChatRoom } = require('../models/chat');
 
 router.post('/addUser', async (req, res) => {
     // if(req.user.role !== "admin"){
@@ -48,7 +49,7 @@ router.post('/login', async (req, res) => {
         }
         const token = jwt.sign({ _id: user._id, role: role }, "varunkey");
         if (role === "Student") {
-            res.status(200).send({ token: token, role: role, studentName: user.username, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds });
+            res.status(200).send({ token: token, role: role, studentName: user.username, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds, id : user._id });
         }
         else {
             res.status(200).send({ token: token, role: role, username: user.username, email: user.email });
@@ -116,6 +117,37 @@ router.post('/addAdmin', async (req, res) => {
         res.status(200).send(savedAdmin);
     } catch (err) {
         res.status(400).send(err);
+    }
+});
+
+router.get('/getChatIds/:userId', async (req, res) => {
+    try{
+        const chatRooms = await ChatRoom.find({ participants: req.params.userId });
+        if(!chatRooms){
+            return res.status(404).send("No chat rooms found");
+        }
+        res.status(200).send(chatRooms);
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
+router.post('/addChatRoom', async (req, res) => {
+    try{
+        const chatRoom = new ChatRoom({
+            name : req.body.name,
+            participants: req.body.participants,
+            isGroupChat: req.body.isGroupChat,
+            projectId: req.body.projectId,
+            teamId: req.body.teamId,
+            admin: req.body.admin
+        });
+        const savedChatRoom = await chatRoom.save();
+        res.status(200).send(savedChatRoom);
+    }
+    catch(err){
+        res.status(500).send(err);
     }
 });
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Tasks extends StatefulWidget {
   const Tasks({super.key});
@@ -26,9 +26,27 @@ class _TasksState extends State<Tasks> {
 
   void getTasks() async {
     try {
-      const storage = FlutterSecureStorage();
-      var studentRollNo = await storage.read(key: 'studentRollNo');
-      var projectId = await storage.read(key: 'projectId');
+      final prefs =
+          await SharedPreferences.getInstance();
+      var studentRollNo =
+          prefs.getString('studentRollNo');
+      var projectId = prefs.getString('projectId');
+
+      if (studentRollNo == null || projectId == null) {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Student or project data not found. Please log in again.'),
+            ),
+          );
+        }
+        return;
+      }
+
       var response = await http.get(
         Uri.parse(
             'https://ps-project-tracker.vercel.app/api/task/getTasks/$studentRollNo/$projectId'),
@@ -68,9 +86,24 @@ class _TasksState extends State<Tasks> {
   }
 
   void addTask() async {
-    const storage = FlutterSecureStorage();
-    String? studentRollNo = await storage.read(key: 'studentRollNo');
-    String? projectId = await storage.read(key: 'projectId');
+    final prefs =
+        await SharedPreferences.getInstance();
+    String? studentRollNo =
+        prefs.getString('studentRollNo');
+    String? projectId = prefs.getString('projectId');
+
+    if (studentRollNo == null || projectId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Student or project data not found. Please log in again.'),
+          ),
+        );
+      }
+      return;
+    }
+
     try {
       var response = await http.post(
         Uri.parse('https://ps-project-tracker.vercel.app/api/task/addTask'),
@@ -119,11 +152,12 @@ class _TasksState extends State<Tasks> {
   void markTaskAsCompleted(String taskId) async {
     try {
       var response = await http.put(
-        Uri.parse('https://ps-project-tracker.vercel.app/api/task/updateTaskStatus/$taskId'),
+        Uri.parse(
+            'https://ps-project-tracker.vercel.app/api/task/updateTaskStatus/$taskId'),
       );
       if (response.statusCode == 200) {
         getTasks();
-        if(mounted){
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Task marked as completed!'),
@@ -131,7 +165,7 @@ class _TasksState extends State<Tasks> {
           );
         }
       } else {
-        if(mounted){
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error completing task: ${response.statusCode}'),
@@ -140,7 +174,7 @@ class _TasksState extends State<Tasks> {
         }
       }
     } catch (e) {
-      if(mounted){
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error completing task: $e'),
@@ -230,9 +264,10 @@ class _TasksState extends State<Tasks> {
                                     style: const TextStyle(fontSize: 14),
                                   ),
                                   const SizedBox(height: 8),
-                                  if(task['taskStatus'] == false) 
+                                  if (task['taskStatus'] == false)
                                     ElevatedButton(
-                                      onPressed: () => markTaskAsCompleted(task['_id']),
+                                      onPressed: () =>
+                                          markTaskAsCompleted(task['_id']),
                                       child: const Text('Mark as Completed'),
                                     ),
                                 ],
@@ -314,26 +349,26 @@ class _TasksState extends State<Tasks> {
   }
 }
 
- Widget _buildShimmerEffect() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(24),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            height: 16,
-            width: 200,
+Widget _buildShimmerEffect() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
             color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(24),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(width: 16),
+        Container(
+          height: 16,
+          width: 200,
+          color: Colors.grey[300],
+        ),
+      ],
+    ),
+  );
+}

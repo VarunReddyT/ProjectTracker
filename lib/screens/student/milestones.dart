@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Milestones extends StatefulWidget {
   const Milestones({super.key});
@@ -24,8 +24,23 @@ class _MilestonesState extends State<Milestones> {
 
   void getMilestones() async {
     try {
-      const storage = FlutterSecureStorage();
-      var projectId = await storage.read(key: 'projectId');
+      final prefs = await SharedPreferences.getInstance();
+      var projectId = prefs.getString('projectId');
+
+      if (projectId == null) {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Project ID not found. Please try again.'),
+            ),
+          );
+        }
+        return;
+      }
+
       var response = await http.get(
         Uri.parse(
             'https://ps-project-tracker.vercel.app/api/milestone/getMilestone/$projectId'),
@@ -65,10 +80,22 @@ class _MilestonesState extends State<Milestones> {
     }
   }
 
-  void addMilestone() async {
-    const storage = FlutterSecureStorage();
-    String? studentRollNo = await storage.read(key: 'studentRollNo');
-    String? projectId = await storage.read(key: 'projectId');
+ void addMilestone() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? studentRollNo = prefs.getString('studentRollNo');
+    String? projectId = prefs.getString('projectId');
+
+    if (studentRollNo == null || projectId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Student or project data not found. Please log in again.'),
+          ),
+        );
+      }
+      return;
+    }
+
     try {
       var response = await http.post(
         Uri.parse('https://ps-project-tracker.vercel.app/api/milestone/addMilestone'),

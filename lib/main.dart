@@ -18,10 +18,17 @@ import 'package:project_tracker/screens/admin/addstudent.dart';
 import 'package:project_tracker/screens/settings.dart';
 import 'package:project_tracker/screens/admin/viewmilestones.dart';
 
-
+import 'package:project_tracker/screens/services/socket_service.dart';
+import 'package:provider/provider.dart';
+import 'package:project_tracker/screens/services/chat.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => SocketService('http://192.168.51.84:4000'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,6 +37,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/',
       routes: {
         '/': (context) => const Login(),
         '/home': (context) => const Home(),
@@ -52,6 +61,8 @@ class MyApp extends StatelessWidget {
         '/viewProjects': (context) => const Viewprojects(),
         '/viewProjectMilestones': (context) => const Viewmilestones(),
 
+
+        '/chat': (context) => ChatScreen(),
       },
     );
   }

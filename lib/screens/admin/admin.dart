@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_tracker/screens/login.dart';
 
 class Admin extends StatefulWidget {
@@ -19,14 +19,13 @@ class _AdminState extends State<Admin> {
   String? username;
   String? email;
   void fetchData() async {
-    const storage = FlutterSecureStorage();
-    var username = await storage.read(key: 'username');
-    var email = await storage.read(key: 'email');
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      this.username = username;
-      this.email = email;
+      username = prefs.getString('username'); 
+      email = prefs.getString('email'); 
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +62,9 @@ class _AdminState extends State<Admin> {
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                const storage = FlutterSecureStorage();
-                storage.deleteAll();
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const Login()),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddProject extends StatefulWidget {
   const AddProject({super.key});
@@ -29,60 +29,74 @@ class _AddProjectState extends State<AddProject> {
   }
 
   void _submitForm() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      try {
-        const storage = FlutterSecureStorage();
-        var studentRollNo = await storage.read(key: 'studentRollNo');
-        var response = await http.post(
-            Uri.parse(
-                'https://ps-project-tracker.vercel.app/api/project/addPersonalProject/$studentRollNo'),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
-              'projectTitle': _projectNameController.text,
-              'projectDescription': _descController.text,
-              'projectDomain': _domainController.text,
-              'projectTechnologies': technologies,
-            }));
-        if (response.statusCode == 200) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text(
-                'Project added successfully',
-                style: TextStyle(color: Colors.greenAccent),
-              ),
-            ));
-          }
-          setState(() {
-            _projectNameController.clear();
-            _descController.clear();
-            _domainController.clear();
-            _techController.clear();
-            technologies.clear();
-          });
-          if(mounted){
-            Navigator.pop(context, true);
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text(
-                'Failed to add project',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-            ));
-          }
-        }
-      } catch (e) {
+  if (_formKey.currentState?.validate() ?? false) {
+    try {
+      final prefs = await SharedPreferences.getInstance(); // Use SharedPreferences
+      var studentRollNo = prefs.getString('studentRollNo'); // Read studentRollNo
+
+      if (studentRollNo == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Failed to add project : $e'),
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+              'Student roll number not found. Please log in again.',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ));
+        }
+        return;
+      }
+
+      var response = await http.post(
+          Uri.parse(
+              'https://ps-project-tracker.vercel.app/api/project/addPersonalProject/$studentRollNo'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'projectTitle': _projectNameController.text,
+            'projectDescription': _descController.text,
+            'projectDomain': _domainController.text,
+            'projectTechnologies': technologies,
+          }));
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+              'Project added successfully',
+              style: TextStyle(color: Colors.greenAccent),
+            ),
+          ));
+        }
+        setState(() {
+          _projectNameController.clear();
+          _descController.clear();
+          _domainController.clear();
+          _techController.clear();
+          technologies.clear();
+        });
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+              'Failed to add project',
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ));
         }
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to add project : $e'),
+        ));
+      }
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

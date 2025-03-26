@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Replace with shared_preferences
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -17,8 +17,19 @@ class _SettingsState extends State<Settings> {
 
   void changePassword() async {
     try {
-      const storage = FlutterSecureStorage();
-      var email = await storage.read(key: 'email');
+      final prefs = await SharedPreferences.getInstance(); // Use SharedPreferences
+      var email = prefs.getString('email'); // Read email from SharedPreferences
+
+      if (email == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Email not found. Please log in again.'),
+            ),
+          );
+        }
+        return;
+      }
 
       var response = await http.post(
         Uri.parse('https://ps-project-tracker.vercel.app/api/user/changePassword'),
@@ -106,7 +117,7 @@ class _SettingsState extends State<Settings> {
           ElevatedButton(
             onPressed: () {
               if (newPassword.text == confirmPassword.text) {
-                // Update password
+                changePassword(); // Call the changePassword method
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

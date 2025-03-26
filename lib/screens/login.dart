@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -40,13 +40,14 @@ class _LoginState extends State<Login> {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        final prefs = await SharedPreferences.getInstance();
+
         if (responseData['role'] == 'Admin') {
-          const storage = FlutterSecureStorage();
-          await storage.deleteAll();
-          await storage.write(key: 'token', value: responseData['token']);
-          await storage.write(key: 'role', value: responseData['role']);
-          await storage.write(key: 'username', value: responseData['username']);
-          await storage.write(key: 'email', value: responseData['email']);
+          await prefs.clear(); // Clear all stored data
+          await prefs.setString('token', responseData['token']);
+          await prefs.setString('role', responseData['role']);
+          await prefs.setString('username', responseData['username']);
+          await prefs.setString('email', responseData['email']);
           setState(() {
             isLoading = false;
           });
@@ -54,29 +55,23 @@ class _LoginState extends State<Login> {
             Navigator.pushReplacementNamed(context, "/admin");
           }
         } else {
-          const storage = FlutterSecureStorage();
-          await storage.deleteAll();
-          await storage.write(key: 'token', value: responseData['token']);
-          await storage.write(key: 'role', value: responseData['role']);
-          await storage.write(
-              key: 'studentName', value: responseData['studentName']);
-          await storage.write(
-              key: 'studentYear',
-              value: responseData['studentYear'].toString());
-          await storage.write(
-              key: 'studentBranch', value: responseData['studentBranch']);
-          await storage.write(
-              key: 'studentSection', value: responseData['studentSection']);
-          await storage.write(
-              key: 'studentRollNo', value: responseData['studentRollNo']);
-          await storage.write(
-              key: 'studentSemester',
-              value: responseData['studentSemester'].toString());
-          await storage.write(
-              key: 'inAteam', value: responseData['inAteam'].toString());
-          await storage.write(key: 'teamId', value: responseData['teamId']);
-          await storage.write(
-              key: 'projectIds', value: jsonEncode(responseData['projectIds']));
+          await prefs.clear(); // Clear all stored data
+          await prefs.setString('token', responseData['token']);
+          await prefs.setString('studentId',responseData['id']);
+          await prefs.setString('role', responseData['role']);
+          await prefs.setString('studentName', responseData['studentName']);
+          await prefs.setString(
+              'studentYear', responseData['studentYear'].toString());
+          await prefs.setString('studentBranch', responseData['studentBranch']);
+          await prefs.setString(
+              'studentSection', responseData['studentSection']);
+          await prefs.setString('studentRollNo', responseData['studentRollNo']);
+          await prefs.setString(
+              'studentSemester', responseData['studentSemester'].toString());
+          await prefs.setString('inAteam', responseData['inAteam'].toString());
+          await prefs.setString('teamId', responseData['teamId']);
+          await prefs.setString(
+              'projectIds', jsonEncode(responseData['projectIds']));
           setState(() {
             isLoading = false;
           });
