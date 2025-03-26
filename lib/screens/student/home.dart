@@ -61,7 +61,7 @@ class _HomeState extends State<Home> {
         });
       }
       if(mounted){
-        Navigator.pushNamed(context, '/chat',arguments: chatRooms[0]);
+        Navigator.pushNamed(context, '/chat',arguments: chatRooms[0]['_id']);
       }
     }
     catch(e){

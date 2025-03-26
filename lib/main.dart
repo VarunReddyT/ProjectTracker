@@ -25,7 +25,7 @@ import 'package:project_tracker/screens/services/chat.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (context) => SocketService('http://192.168.51.84:4000'),
+      create: (context) => SocketService('https://ps-project-tracker.vercel.app'),
       child: const MyApp(),
     ),
   );
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
         '/viewProjectMilestones': (context) => const Viewmilestones(),
 
 
-        '/chat': (context) => ChatScreen(),
+        '/chat': (context) => ChatScreen(chatRoomId: ModalRoute.of(context)!.settings.arguments as String),
       },
     );
   }
