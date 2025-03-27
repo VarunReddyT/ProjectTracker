@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:project_tracker/screens/student/home.dart';
+import 'package:provider/provider.dart';
 import 'package:project_tracker/screens/login.dart';
+import 'package:project_tracker/screens/student/home.dart';
 import 'package:project_tracker/screens/student/project.dart';
 import 'package:project_tracker/screens/student/tasks.dart';
 import 'package:project_tracker/screens/student/milestones.dart';
-import 'package:project_tracker/screens/admin/addproject.dart';
 import 'package:project_tracker/screens/student/share.dart';
 import 'package:project_tracker/screens/student/team.dart';
 import 'package:project_tracker/screens/admin/admin.dart';
@@ -17,15 +17,18 @@ import 'package:project_tracker/screens/admin/viewteams.dart';
 import 'package:project_tracker/screens/admin/addstudent.dart';
 import 'package:project_tracker/screens/settings.dart';
 import 'package:project_tracker/screens/admin/viewmilestones.dart';
-
+import 'package:project_tracker/screens/admin/addproject.dart';
 import 'package:project_tracker/screens/services/socket_service.dart';
-import 'package:provider/provider.dart';
 import 'package:project_tracker/screens/services/chat.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => SocketService('https://ps-project-tracker.vercel.app'),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => SocketService('ws://192.168.51.84:4000'),
+        ),
+      ],
       child: const MyApp(),
     ),
   );
@@ -48,9 +51,7 @@ class MyApp extends StatelessWidget {
         '/addProject': (context) => const AddProject(),
         '/share': (context) => const Share(),
         '/team': (context) => const Team(),
-        
         '/settings': (context) => const Settings(),
-
         '/admin': (context) => const Admin(),
         '/addAcademicProject': (context) => const Addacademicproject(),
         '/addStudent': (context) => const Addstudent(),
@@ -60,9 +61,15 @@ class MyApp extends StatelessWidget {
         '/viewTeams': (context) => const Viewteams(),
         '/viewProjects': (context) => const Viewprojects(),
         '/viewProjectMilestones': (context) => const Viewmilestones(),
-
-
-        '/chat': (context) => ChatScreen(chatRoomId: ModalRoute.of(context)!.settings.arguments as String),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/chat') {
+          final chatRoomId = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => ChatScreen(chatRoomId: chatRoomId),
+          );
+        }
+        return null;
       },
     );
   }

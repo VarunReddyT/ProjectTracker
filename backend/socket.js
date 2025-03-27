@@ -4,13 +4,22 @@ let io;
 
 const initSocket = (server) => {
   io = socketIO(server, {
+    path: "/socket.io",
     cors: {
-      origin: '*',
+      origin: "*",
+      methods: ["GET", "POST"],
+      credentials: true,
     },
-    transports: ['websocket', 'polling'],
-    allowEIO3: true,
-    allowUpgrades: true,
-    perMessageDeflate: false,
+    transports: ["websocket", "polling"], // Allow both transports
+  });
+
+  // Connection logging
+  io.on('connection', (socket) => {
+    console.log(`New connection: ${socket.id}`);
+
+    socket.on('disconnect', () => {
+      console.log(`Client disconnected: ${socket.id}`);
+    });
   });
 
   return io;

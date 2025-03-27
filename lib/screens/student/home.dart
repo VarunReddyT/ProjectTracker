@@ -30,12 +30,12 @@ class _HomeState extends State<Home> {
     await prefs.setString('projectId', project['_id']);
     await prefs.setString('projectTitle', project['projectTitle']);
     await prefs.setString('projectDescription', project['projectDescription']);
-    await prefs.setString('projectStatus', project['projectStatus']); 
+    await prefs.setString('projectStatus', project['projectStatus']);
     await prefs.setString('projectDomain', project['projectDomain']);
     await prefs.setString('projectType', project['projectType']);
     if (project['studentRollNo'] == null) {
-      await prefs.setString('teamId', project['teamId']); 
-      await prefs.setString('projectStartDate', project['projectStartDate']); 
+      await prefs.setString('teamId', project['teamId']);
+      await prefs.setString('projectStartDate', project['projectStartDate']);
     }
     if (mounted) {
       Navigator.pushNamed(context, '/project');
@@ -48,30 +48,41 @@ class _HomeState extends State<Home> {
       fetchData();
     }
   }
-  Future<void> fetchChatRooms() async{
-    if(userId == null){
+
+  Future<void> fetchChatRooms() async {
+    if (userId == null) {
       return;
     }
-    try{
-      var response = await http.get(Uri.parse('https://ps-project-tracker.vercel.app/api/user/getChatIds/$userId'));
-      var data = jsonDecode(response.body);
-      if(data is List){
-        setState(() {
-          chatRooms = List<Map<String,dynamic>>.from(data);
-        });
+    try {
+      var response = await http.get(Uri.parse(
+          'https://ps-project-tracker.vercel.app/api/user/getChatIds/$userId'));
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data is List) {
+          if (mounted) {
+            setState(() {
+              chatRooms = List<Map<String, dynamic>>.from(data);
+            });
+          }
+          if (chatRooms.isNotEmpty && mounted) {
+            Navigator.pushNamed(context, '/chat',
+                arguments: chatRooms[0]['_id']);
+          }
+        }
+      } else {
+        throw Exception(
+            'Failed to load chat rooms. Status: ${response.statusCode}');
       }
-      if(mounted){
-        Navigator.pushNamed(context, '/chat',arguments: chatRooms[0]['_id']);
-      }
-    }
-    catch(e){
-      if(mounted){
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error : $e"))
+          SnackBar(content: Text("Error: $e")),
         );
       }
     }
   }
+
   Future<void> fetchData() async {
     final prefs = await SharedPreferences.getInstance();
     studentRollNo = prefs.getString('studentRollNo');
@@ -80,7 +91,8 @@ class _HomeState extends State<Home> {
     if (studentRollNo == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Student data not found. Please log in again.')),
+          const SnackBar(
+              content: Text('Student data not found. Please log in again.')),
         );
       }
       return;
@@ -138,13 +150,12 @@ class _HomeState extends State<Home> {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () => {
-                Navigator.pop(context),
-                Navigator.pushNamed(context, '/settings'),
-              }
-            ),
+                leading: const Icon(Icons.settings),
+                title: const Text('Settings'),
+                onTap: () => {
+                      Navigator.pop(context),
+                      Navigator.pushNamed(context, '/settings'),
+                    }),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
@@ -194,7 +205,6 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                     ),
-                  
             ),
       // floatingActionButton: FloatingActionButton(
       //   onPressed: () {
@@ -206,7 +216,7 @@ class _HomeState extends State<Home> {
         onPressed: () {
           fetchChatRooms();
         },
-        child : const Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
