@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { BaseUser, Student, Admin} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { ChatRoom } = require('../models/chat');
+const { ChatRoom, Message } = require('../models/chat');
 
 router.post('/addUser', async (req, res) => {
     // if(req.user.role !== "admin"){
