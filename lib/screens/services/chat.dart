@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'socket_service.dart';
+import 'package:project_tracker/screens/services/socket_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomId;
@@ -14,8 +14,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, dynamic>> messages = [];
-  String? userId;
+  final ScrollController _scrollController = ScrollController();
+  final List<Map<String, dynamic>> _messages = [];
+  String? _userId;
+  String? _username;
   late final SocketService _socketService;
 
   @override
@@ -23,61 +25,93 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     _socketService = Provider.of<SocketService>(context, listen: false);
     _loadUserData();
-    _setupSocketListeners();
-    _joinChatRoom();
   }
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userId = prefs.getString('studentId');
-    });
+    _userId = prefs.getString('studentId');
+    _username = prefs.getString('username') ?? 'Anonymous';
+
+    if (_userId != null) {
+      _joinChatRoom();
+      _setupSocketListeners();
+    }
+    setState(() {});
   }
 
   void _setupSocketListeners() {
     _socketService.onMessage('new_message', (data) {
+
       if (mounted && data is Map<String, dynamic>) {
-        setState(() => messages.add(data));
+        final message = data['message'];
+
+        if (message is Map<String, dynamic>) {
+          setState(() {
+            _messages.insert(0, {
+              'userId': message['sender']['_id'],
+              'message': message['content'],
+              'timestamp': message['timestamp'],
+              'sender': message['sender'],
+            });
+          });
+          _scrollToBottom();
+        }
+      }
+    });
+
+    _socketService.onMessage('chat_history', (data) {
+      if (mounted && data is List) {
+        setState(() {
+          _messages.clear();
+          _messages.addAll(data.reversed.cast<Map<String, dynamic>>());
+        });
+        _scrollToBottom();
       }
     });
 
     _socketService.onMessage('message_error', (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $error')),
+          SnackBar(content: Text('Error: ${error.toString()}')),
         );
       }
     });
   }
 
   void _joinChatRoom() {
-    if (userId != null) {
-      _socketService.sendMessage('join_room', {
-        'chatRoomId': widget.chatRoomId,
-        'userId': userId,
-      });
-    }
+    _socketService.sendMessage('join_room', {
+      'chatRoomId': widget.chatRoomId,
+      'userId': _userId,
+    });
   }
 
   void _sendMessage() {
-    if (_controller.text.trim().isEmpty || userId == null) return;
+    if (_controller.text.trim().isEmpty || _userId == null) return;
 
     final messageData = {
       'chatRoomId': widget.chatRoomId,
-      'userId': userId,
+      'userId': _userId,
       'message': _controller.text.trim(),
       'timestamp': DateTime.now().toIso8601String(),
+      'tempId': DateTime.now().millisecondsSinceEpoch.toString(),
+      'sender': {'_id': _userId, 'username': _username},
     };
 
     _socketService.sendMessage('send_message', messageData);
     _controller.clear();
 
-    // Optimistically add the message to the UI
-    setState(() {
-      messages.add({
-        ...messageData,
-        'status': 'sending', // You can use this to show sending status
-      });
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -89,33 +123,22 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          Consumer<SocketService>(
-            builder: (context, socketService, child) {
-              return Container(
-                padding: const EdgeInsets.all(8),
-                color: socketService.isConnected ? Colors.green : Colors.red,
-                child: Center(
-                  child: Text(
-                    socketService.isConnected ? 'Connected' : 'Disconnected',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              );
-            },
-          ),
           Expanded(
             child: ListView.builder(
-              reverse: true, // Newest messages at the bottom
-              itemCount: messages.length,
-              itemBuilder: (_, index) {
-                final message = messages[messages.length - 1 - index];
-                final isMe = message['userId'] == userId;
-                
+              controller: _scrollController,
+              reverse: true,
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final message = _messages[index];
+                final isMe = message['userId'] == _userId;
+
                 return MessageBubble(
-                  message: message['message'],
+                  message: message['message'] ?? '',
                   isMe: isMe,
-                  timestamp: message['timestamp'],
-                  status: message['status'],
+                  timestamp: message['timestamp'] ?? '',
+                  sender: message['sender'] is Map<String, dynamic>
+                      ? message['sender']['username'] ?? 'Unknown'
+                      : 'Unknown',
                 );
               },
             ),
@@ -128,7 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      labelText: 'Type a message',
+                      hintText: 'Type a message...',
                       border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _sendMessage(),
@@ -137,6 +160,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 IconButton(
                   icon: const Icon(Icons.send),
                   onPressed: _sendMessage,
+                  color: Colors.blue,
                 ),
               ],
             ),
@@ -149,11 +173,11 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void dispose() {
     _controller.dispose();
-    // Leave the chat room when the screen is disposed
-    if (userId != null) {
+    _scrollController.dispose();
+    if (_userId != null) {
       _socketService.sendMessage('leave_room', {
         'chatRoomId': widget.chatRoomId,
-        'userId': userId,
+        'userId': _userId,
       });
     }
     super.dispose();
@@ -164,40 +188,50 @@ class MessageBubble extends StatelessWidget {
   final String message;
   final bool isMe;
   final String timestamp;
-  final String? status;
+  final String sender;
 
   const MessageBubble({
     Key? key,
     required this.message,
     required this.isMe,
     required this.timestamp,
-    this.status,
+    required this.sender,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isMe ? Colors.blue[200] : Colors.grey[300],
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(12),
-            topRight: const Radius.circular(12),
-            bottomLeft: Radius.circular(isMe ? 12 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(
+            isMe ? 'You' : sender,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isMe ? Colors.blue : Colors.grey[700],
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(message),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
+          Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.7,
+            ),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isMe ? Colors.blue[100] : Colors.grey[200],
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(12),
+                topRight: const Radius.circular(12),
+                bottomLeft: Radius.circular(isMe ? 12 : 0),
+                bottomRight: Radius.circular(isMe ? 0 : 12),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(message),
+                const SizedBox(height: 4),
                 Text(
                   _formatTime(timestamp),
                   style: TextStyle(
@@ -205,18 +239,10 @@ class MessageBubble extends StatelessWidget {
                     color: Colors.grey[600],
                   ),
                 ),
-                if (isMe && status != null) ...[
-                  const SizedBox(width: 4),
-                  Icon(
-                    status == 'sending' ? Icons.access_time : Icons.done,
-                    size: 12,
-                    color: status == 'delivered' ? Colors.blue : Colors.grey,
-                  ),
-                ],
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

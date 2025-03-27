@@ -151,4 +151,18 @@ router.post('/addChatRoom', async (req, res) => {
     }
 });
 
+router.get('/getMessages/:chatRoomId', async (req, res) => {
+    try{
+        const chatRoom = await ChatRoom.findById(req.params.chatRoomId);
+        if(!chatRoom){
+            return res.status(404).send("Chat room not found");
+        }
+        const messages = await Message.find({ chatRoomId: req.params.chatRoomId });
+        res.status(200).send(messages);
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+});
+
 module.exports = router;
