@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_tracker/screens/services/socket_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomId;
@@ -25,6 +27,38 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     _socketService = Provider.of<SocketService>(context, listen: false);
     _loadUserData();
+    _fetchMessages();
+  }
+
+  Future<void> _fetchMessages() async {
+    if (_userId == null) return;
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'https://ps-project-tracker.vercel.app/api/chat/getMessages/${widget.chatRoomId}'),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _messages.clear();
+          _messages.addAll(data.reversed.cast<Map<String, dynamic>>());
+        });
+        _scrollToBottom();
+      } else {
+        if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to load messages')),
+          );
+        }
+      }
+    } catch (e) {
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching messages: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadUserData() async {

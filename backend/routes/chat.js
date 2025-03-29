@@ -97,6 +97,7 @@ const SocketRoutes = (io) => {
             }
         });
 
+
         socket.on("disconnect", () => {
             console.log(`User disconnected : ${socket.id}`);
         });
