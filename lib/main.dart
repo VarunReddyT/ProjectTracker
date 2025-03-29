@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:project_tracker/screens/login.dart';
 import 'package:project_tracker/screens/student/home.dart';
 import 'package:project_tracker/screens/student/project.dart';
@@ -18,20 +17,9 @@ import 'package:project_tracker/screens/admin/addstudent.dart';
 import 'package:project_tracker/screens/settings.dart';
 import 'package:project_tracker/screens/admin/viewmilestones.dart';
 import 'package:project_tracker/screens/admin/addproject.dart';
-import 'package:project_tracker/screens/services/socket_service.dart';
-import 'package:project_tracker/screens/services/chat.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => SocketService('ws://192.168.51.84:4000'),
-        ),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -61,15 +49,6 @@ class MyApp extends StatelessWidget {
         '/viewTeams': (context) => const Viewteams(),
         '/viewProjects': (context) => const Viewprojects(),
         '/viewProjectMilestones': (context) => const Viewmilestones(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/chat') {
-          final chatRoomId = settings.arguments as String;
-          return MaterialPageRoute(
-            builder: (context) => ChatScreen(chatRoomId: chatRoomId),
-          );
-        }
-        return null;
       },
     );
   }

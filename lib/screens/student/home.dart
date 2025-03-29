@@ -206,15 +206,9 @@ class _HomeState extends State<Home> {
                       ),
                     ),
             ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     addProject();
-      //   },
-      //   child: const Icon(Icons.add),
-      // ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          fetchChatRooms();
+          addProject();
         },
         child: const Icon(Icons.add),
       ),
