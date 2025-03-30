@@ -68,7 +68,33 @@ const ProjectSchema = new mongoose.Schema({
                 default : false
             }
         }]
-    }]
-});
+    }],
+    isReleased : {
+        type : Boolean,
+        default : false
+    },
+    isStarted : {
+        type : Boolean,
+        default : false
+    },
+    isAssigned : {
+        type : Boolean,
+        default : false
+    },
+    startDate : {
+        type : Date,
+        default : null
+    },
+    endDate : {
+        type : Date,
+        default : null
+    },
+    targetYear : {
+        type : Number,
+        enum : [1,2,3,4],
+        required : true
+    },
+
+},{timestamps : true});
 
 module.exports = mongoose.model('Project', ProjectSchema);

@@ -20,6 +20,10 @@ const TeamSchema = new mongoose.Schema({
         type: Number, 
         required: true
     },
+    hasSelected: {
+        type: Boolean,
+        default: false
+    }
 });
 
 module.exports = mongoose.model('Team', TeamSchema);

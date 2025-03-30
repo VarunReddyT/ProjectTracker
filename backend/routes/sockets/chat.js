@@ -1,4 +1,4 @@
-const { Message, ChatRoom } = require('../models/chat');
+const { Message, ChatRoom } = require('../../models/chat');
 
 const SocketRoutes = (io) => {
     io.on("connection", (socket) => {

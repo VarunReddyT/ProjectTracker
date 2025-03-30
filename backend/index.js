@@ -9,7 +9,7 @@ const TeamRoutes = require('./routes/team');
 const ProjectRoutes = require('./routes/project');
 const TaskRoutes = require('./routes/task');
 const MilestoneRoutes = require('./routes/milestone');
-const {SocketRoutes} = require('./routes/chat');
+const {SocketRoutes} = require('./routes/sockets/chat');
 
 require('dotenv').config();
 app.use(express.json());
