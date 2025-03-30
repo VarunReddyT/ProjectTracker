@@ -26,7 +26,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => SocketService('ws://192.168.0.156:4000'),
+          create: (context) => SocketService('ws://192.168.0.157:4000'),
         ),
       ],
       child: const MyApp(),
