@@ -1,16 +1,20 @@
 const Project = require('../../models/project');
 const Team = require('../../models/team');
 const {socketGuard, activateSelection, deactivateSelection} = require('../../middleware/socketSelection');
+const mongoose = require('mongoose');
 
+const SESSION_TIMEOUT = 15 * 60 * 1000; 
 const ProjectSelection = (io) => {
     io.use(socketGuard);
 
     let activeSession = null;
+    const connectedTeams = new Map();
     io.on("connection", (socket)=>{
         console.log(`User connected for Project Selection: ${socket.id}`);
 
         socket.on("admin_start_selection", async ({targetYear}) => {
             try{
+                const session = await mongoose.startSession();
                 const projects = await Project.find({year: targetYear, isReleased: false, isAssigned: false});
                 if(projects.length === 0){
                     socket.emit("release_error", {
