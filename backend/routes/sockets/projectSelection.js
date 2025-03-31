@@ -1,22 +1,22 @@
 const Project = require('../../models/project');
 const Team = require('../../models/team');
-const {socketGuard, activateSelection, deactivateSelection} = require('../../middleware/socketSelection');
 const mongoose = require('mongoose');
 
 const SESSION_TIMEOUT = 15 * 60 * 1000; 
 const ProjectSelection = (io) => {
-    io.use(socketGuard);
 
     let activeSession = null;
     const connectedTeams = new Map();
     io.on("connection", (socket)=>{
         console.log(`User connected for Project Selection: ${socket.id}`);
-
+        
         socket.on("admin_start_selection", async ({targetYear}) => {
+            const session = await mongoose.startSession();
+            session.startTransaction();
             try{
-                const session = await mongoose.startSession();
-                const projects = await Project.find({year: targetYear, isReleased: false, isAssigned: false});
+                const projects = await Project.find({year: targetYear, isReleased: false, isAssigned: false}).session(session);
                 if(projects.length === 0){
+                    session.abortTransaction();
                     socket.emit("release_error", {
                         code : "NO_PROJECTS",
                         message: "No projects available for selection"
@@ -27,16 +27,23 @@ const ProjectSelection = (io) => {
                     targetYear,
                     projects : projects.map(p => p._id),
                     allocations : new Map(),
-                    selectedTeams : new Set()
+                    selectedTeams : new Set(),
+                    timeout : setTimeout(() => {
+                        endSession();
+                    }, SESSION_TIMEOUT)
                 }
 
                 await Project.updateMany(
                     {_id: {$in: projects.map(p => p._id)}},
-                    {$set: {isReleased: true}}
+                    {$set: {isReleased: true}},
+                    {session}
                 );
+
+                await session.commitTransaction();
                 
                 io.emit("projects_released", {
                     targetYear,
+                    duration: SESSION_TIMEOUT,
                     projects : projects.map(p => ({
                         id: p._id,
                         name: p.projectTitle,
@@ -45,39 +52,68 @@ const ProjectSelection = (io) => {
                 });
             }
             catch(err){
-                console.error('Error fetching projects:', err);
-                socket.emit("release_error", {code : "ERROR_FETCHING_PROJECTS" ,message: err.message});
+                session.abortTransaction();
+                console.error('Error starting selection:', err);
+                socket.emit("release_error", {code : "ERROR_STARTING_SELECTION" ,message: err.message});
                 return;
+            }
+            finally{
+                session.endSession();
             }
         });
 
-        socket.on("admin_stop_selection", async () => {
+        const endSession = async()=>{
             if(!activeSession){
-                socket.emit("release_error", {
-                    code : "NO_ACTIVE_SESSION",
-                    message: "No active session to stop"});
                 return;
             }
+            const session = await mongoose.startSession();
+            session.startTransaction();
+
             try{
                 await Project.updateMany(
                     {_id: {$in: activeSession.projects}},
-                    {$set: {isReleased: false}}
+                    {$set: {isReleased: false}},
+                    {session}
                 );
-                activeSession = null;
-                io.emit("projects_selection_stopped", {});
+
+                await session.commitTransaction();
+                io.emit("projects_selection_ended", {
+                    code : "SESSION_ENDED",
+                    message: "Selection session ended",
+                    targetYear: activeSession.targetYear
+                });
             }
             catch(err){
-                console.error('Error stopping selection:', err);
-                socket.emit("release_error", {
-                    code : "ERROR_STOPPING_SELECTION",
+                await session.abortTransaction();
+                console.error('Error ending selection session:', err);
+                io.emit("release_error", {
+                    code : "ERROR_ENDING_SESSION",
                     message: err.message});
-                return;
+                return; 
             }
-        });
+            finally{
+                clearTimeout(activeSession.timeout);    
+                activeSession = null;
+                connectedTeams.clear();
+                session.endSession();
+            }
+        }  
+
+        socket.on("admin_stop_selection",endSession);
 
         socket.on("team_select_project", async ({teamId, projectId}) => {
+            if(connectedTeams.has(teamId)){
+                socket.emit("selection_error", {
+                    code : "TEAM_ALREADY_CONNECTED",
+                    message: "Your team is already connected from another device"});
+                return;
+            }
+            connectedTeams.set(teamId, socket.id);
+            const session = await mongoose.startSession();
+            session.startTransaction();
             try{
                 if(!activeSession){
+                    session.abortTransaction();
                     socket.emit("release_error", {
                         code : "NO_ACTIVE_SESSION",
                         message: "No selection session active"});
@@ -90,6 +126,7 @@ const ProjectSelection = (io) => {
                 ])
 
                 if(!team || !project){
+                    session.abortTransaction();
                     socket.emit("selection_error", {
                         code : "INVALID_TEAM_OR_PROJECT",
                         message: "Invalid team or project ID"});
@@ -97,6 +134,7 @@ const ProjectSelection = (io) => {
                 }
 
                 if(team.studentsYear !== activeSession.targetYear){
+                    session.abortTransaction();
                     socket.emit("selection_error", {
                         code : "INVALID_TEAM_YEAR",
                         message: "Team year does not match selection year"});
@@ -104,12 +142,14 @@ const ProjectSelection = (io) => {
                 }
 
                 if(activeSession.allocations.has(projectId)){
+                    session.abortTransaction();
                     socket.emit("selection_error", {
                         code : "PROJECT_ALREADY_SELECTED",
                         message: "Project already selected by another team"});
                     return;
                 }
                 if(activeSession.selectedTeams.has(teamId)){
+                    session.abortTransaction();
                     socket.emit("selection_error", {
                         code : "TEAM_ALREADY_SELECTED",
                         message: "Team already selected a project"});
@@ -119,11 +159,14 @@ const ProjectSelection = (io) => {
                 const updatedProject = await Project.findOneAndUpdate(
                     {_id: projectId, isReleased: true, isAssigned: false},
                     {$set: {isAssigned: true, teamId: teamId}},
-                    {new: true}
+                    {new: true, session}
                 );
 
                 if(!updatedProject){
-                    socket.emit("selection_error", {message: "Project not available for selection"});
+                    session.abortTransaction();
+                    socket.emit("selection_error", {
+                        code : "PROJECT_NOT_AVAILABLE",
+                        message: "Project not available for selection"});
                     return;
                 }
 
@@ -133,7 +176,10 @@ const ProjectSelection = (io) => {
                 await Team.findByIdAndUpdate(
                     teamId,
                     {$set: {projectId: projectId, hasSelected: true}},
+                    {session}
                 );
+
+                await session.commitTransaction();
 
                 socket.emit("project_selected", {
                     projectId,
@@ -142,11 +188,18 @@ const ProjectSelection = (io) => {
                 });
             }
             catch(err){
+                await session.abortTransaction();
+                if(connectedTeams.has(teamId)){
+                    connectedTeams.delete(teamId);
+                }
                 console.error('Error selecting project:', err);
                 socket.emit("selection_error", {
                     code : "ERROR_SELECTING_PROJECT",
                     message: err.message});
                 return;
+            }
+            finally{
+                session.endSession();
             }
         });
     })
