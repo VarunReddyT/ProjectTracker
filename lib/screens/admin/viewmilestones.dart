@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Viewmilestones extends StatefulWidget {
   const Viewmilestones({super.key});
 
@@ -42,7 +42,7 @@ class _ViewmilestonesState extends State<Viewmilestones> {
 
     try {
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app/api/milestone/getMilestone/$projectId'));
+          '${dotenv.env['API_KEY']}/api/milestone/getMilestone/$projectId'));
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         setState(() {

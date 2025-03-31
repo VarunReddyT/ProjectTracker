@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:project_tracker/screens/login.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -55,7 +55,7 @@ class _HomeState extends State<Home> {
     }
     try {
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app/api/user/getChatIds/$userId'));
+          '${dotenv.env['API_KEY']}/api/user/getChatIds/$userId'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -100,7 +100,7 @@ class _HomeState extends State<Home> {
 
     try {
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app/api/project/getOngoingProjects/$studentRollNo'));
+          '${dotenv.env['API_KEY']}/api/project/getOngoingProjects/$studentRollNo'));
 
       var data = jsonDecode(response.body);
       if (data is List) {

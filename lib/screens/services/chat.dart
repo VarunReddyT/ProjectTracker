@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_tracker/screens/services/socket_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ChatScreen extends StatefulWidget {
   final String chatRoomId;
 
@@ -35,7 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            'https://ps-project-tracker.vercel.app/api/chat/getMessages/${widget.chatRoomId}'),
+            '${dotenv.env['API_KEY']}/api/chat/getMessages/${widget.chatRoomId}'),
       );
 
       if (response.statusCode == 200) {

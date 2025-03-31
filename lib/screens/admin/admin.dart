@@ -47,6 +47,11 @@ class _AdminState extends State<Admin> {
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.space_dashboard_rounded),
+              title: const Text('Project Selection'),
+              onTap: () => Navigator.pushNamed(context, '/manageProjectSelection'),
+            ),
+            ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Profile'),
               onTap: () => Navigator.pop(context),

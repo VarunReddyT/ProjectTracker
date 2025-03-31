@@ -24,6 +24,6 @@ const MilestoneSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref : 'Project',
     }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Milestone', MilestoneSchema);

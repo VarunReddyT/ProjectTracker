@@ -3,7 +3,7 @@ const Team = require('../../models/team');
 const mongoose = require('mongoose');
 
 const SESSION_TIMEOUT = 15 * 60 * 1000; 
-const ProjectSelection = (io) => {
+const ProjectSelectionRoutes = (io) => {
 
     let activeSession = null;
     const connectedTeams = new Map();
@@ -11,10 +11,31 @@ const ProjectSelection = (io) => {
         console.log(`User connected for Project Selection: ${socket.id}`);
         
         socket.on("admin_start_selection", async ({targetYear}) => {
+            if(socket.handshake.auth.isAdmin !== true){
+                socket.emit("release_error", {
+                    code : "NOT_ADMIN",
+                    message: "You are not authorized to start the selection session"
+                });
+                return;
+            }
+            if(activeSession){
+                socket.emit("release_error", {
+                    code : "SESSION_ALREADY_ACTIVE",
+                    message: "A selection session is already active"
+                });
+                return;
+            }
+            if(!targetYear || isNaN(targetYear)){
+                socket.emit("release_error", {
+                    code : "INVALID_YEAR",
+                    message: "Invalid target year"
+                });
+                return;
+            }
             const session = await mongoose.startSession();
             session.startTransaction();
             try{
-                const projects = await Project.find({year: targetYear, isReleased: false, isAssigned: false}).session(session);
+                const projects = await Project.find({targetYear: targetYear, isReleased: false, isAssigned: false}).session(session);
                 if(projects.length === 0){
                     session.abortTransaction();
                     socket.emit("release_error", {
@@ -27,10 +48,7 @@ const ProjectSelection = (io) => {
                     targetYear,
                     projects : projects.map(p => p._id),
                     allocations : new Map(),
-                    selectedTeams : new Set(),
-                    timeout : setTimeout(() => {
-                        endSession();
-                    }, SESSION_TIMEOUT)
+                    selectedTeams : new Set()
                 }
 
                 await Project.updateMany(
@@ -63,12 +81,10 @@ const ProjectSelection = (io) => {
         });
 
         const endSession = async()=>{
-            if(!activeSession){
-                return;
-            }
+           
             const session = await mongoose.startSession();
             session.startTransaction();
-
+            console.log(activeSession);
             try{
                 await Project.updateMany(
                     {_id: {$in: activeSession.projects}},
@@ -91,8 +107,7 @@ const ProjectSelection = (io) => {
                     message: err.message});
                 return; 
             }
-            finally{
-                clearTimeout(activeSession.timeout);    
+            finally{ 
                 activeSession = null;
                 connectedTeams.clear();
                 session.endSession();
@@ -205,4 +220,4 @@ const ProjectSelection = (io) => {
     })
 }
 
-module.exports = {ProjectSelection};
+module.exports = { ProjectSelectionRoutes };

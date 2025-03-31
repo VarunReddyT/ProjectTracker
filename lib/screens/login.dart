@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Login extends StatefulWidget {
   const Login({super.key});
 
@@ -25,7 +25,7 @@ class _LoginState extends State<Login> {
     setState(() {
       isLoading = true;
     });
-    var url = Uri.parse('https://ps-project-tracker.vercel.app/api/user/login');
+    var url = Uri.parse('${dotenv.env['API_KEY']}/api/user/login');
     try {
       var response = await http.post(
         url,

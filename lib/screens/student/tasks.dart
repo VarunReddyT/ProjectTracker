@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Tasks extends StatefulWidget {
   const Tasks({super.key});
 
@@ -49,7 +49,7 @@ class _TasksState extends State<Tasks> {
 
       var response = await http.get(
         Uri.parse(
-            'https://ps-project-tracker.vercel.app/api/task/getTasks/$studentRollNo/$projectId'),
+            '${dotenv.env['API_KEY']}/api/task/getTasks/$studentRollNo/$projectId'),
       );
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -106,7 +106,7 @@ class _TasksState extends State<Tasks> {
 
     try {
       var response = await http.post(
-        Uri.parse('https://ps-project-tracker.vercel.app/api/task/addTask'),
+        Uri.parse('${dotenv.env['API_KEY']}/api/task/addTask'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -153,7 +153,7 @@ class _TasksState extends State<Tasks> {
     try {
       var response = await http.put(
         Uri.parse(
-            'https://ps-project-tracker.vercel.app/api/task/updateTaskStatus/$taskId'),
+            '${dotenv.env['API_KEY']}/api/task/updateTaskStatus/$taskId'),
       );
       if (response.statusCode == 200) {
         getTasks();

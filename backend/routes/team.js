@@ -14,6 +14,16 @@ router.post('/addTeam', async (req, res) => {
         });
         const savedTeam = await team.save();
 
+        for(let i = 0; i < teamMembers.length; i++){
+            const student = await Student.findOne({studentRollNo: teamMembers[i]});
+            if(!student){
+                return res.status(404).send("Student not found");
+            }
+            student.teamId = savedTeam._id;
+            student.inAteam = true;
+            await student.save();
+        }
+
         res.status(200).send(savedTeam);
     }
     catch(err){

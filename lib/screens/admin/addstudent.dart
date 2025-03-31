@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Addstudent extends StatefulWidget {
   const Addstudent({super.key});
 
@@ -30,7 +30,7 @@ class _AddstudentState extends State<Addstudent> {
     try {
       var response = await http.post(
           Uri.parse(
-              'https://ps-project-tracker.vercel.app/api/user/addUser'),
+              '${dotenv.env['API_KEY']}/api/user/addUser'),
           headers: {
             'Content-Type': 'application/json',
           },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AssignProject extends StatefulWidget {
   const AssignProject({super.key});
@@ -29,7 +30,7 @@ class _AssignProjectState extends State<AssignProject> {
   void fetchTeams(int year) async {
     try {
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app/api/team/getUnassignedTeams/$year'));
+          '${dotenv.env['API_KEY']}/api/team/getUnassignedTeams/$year'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -64,7 +65,7 @@ class _AssignProjectState extends State<AssignProject> {
     });
     try {
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app/api/project/getUnassignedProjects'));
+          '${dotenv.env['API_KEY']}/api/project/getUnassignedProjects'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -107,7 +108,7 @@ class _AssignProjectState extends State<AssignProject> {
       var teamId = teamData.firstWhere((team) => team['teamName'] == selectedTeam)['_id'];
       var response = await http.post(
           Uri.parse(
-              'https://ps-project-tracker.vercel.app/api/project/assignProject/$teamId'),
+              '${dotenv.env['API_KEY']}/api/project/assignProject/$teamId'),
           headers: {
             'Content-Type': 'application/json',
           },

@@ -10,7 +10,7 @@ const ProjectRoutes = require('./routes/project');
 const TaskRoutes = require('./routes/task');
 const MilestoneRoutes = require('./routes/milestone');
 const {SocketRoutes} = require('./routes/sockets/chat');
-
+const {ProjectSelectionRoutes} = require('./routes/sockets/projectSelection');
 require('dotenv').config();
 app.use(express.json());
 app.use(cors());
@@ -35,6 +35,7 @@ const server = http.createServer(app);
 const io = initSocket(server);
 app.options('*', cors());
 SocketRoutes(io);
+ProjectSelectionRoutes(io);
 
 server.listen(4000, "0.0.0.0", () => {
     console.log(`Server is running on port 4000`);

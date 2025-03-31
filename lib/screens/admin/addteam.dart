@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Addteam extends StatefulWidget {
   const Addteam({super.key});
 
@@ -18,7 +18,7 @@ class _AddteamState extends State<Addteam> {
   void addTeam() async {
     try {
       var response = await http.post(
-          Uri.parse('https://ps-project-tracker.vercel.app/api/team/addTeam'),
+          Uri.parse('${dotenv.env['API_KEY']}/api/team/addTeam'),
           headers: {
             'Content-Type': 'application/json',
           },

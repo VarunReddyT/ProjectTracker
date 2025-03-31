@@ -8,7 +8,7 @@ import 'package:project_tracker/screens/student/milestones.dart';
 import 'package:project_tracker/screens/student/share.dart';
 import 'package:project_tracker/screens/student/team.dart';
 import 'package:project_tracker/screens/admin/admin.dart';
-import 'package:project_tracker/screens/student/addacademicproject.dart';
+import 'package:project_tracker/screens/admin/addacademicproject.dart';
 import 'package:project_tracker/screens/admin/addmilestone.dart';
 import 'package:project_tracker/screens/admin/addteam.dart';
 import 'package:project_tracker/screens/admin/assignproject.dart';
@@ -17,16 +17,23 @@ import 'package:project_tracker/screens/admin/viewteams.dart';
 import 'package:project_tracker/screens/admin/addstudent.dart';
 import 'package:project_tracker/screens/settings.dart';
 import 'package:project_tracker/screens/admin/viewmilestones.dart';
-import 'package:project_tracker/screens/admin/addproject.dart';
+import 'package:project_tracker/screens/student/addproject.dart';
 import 'package:project_tracker/screens/services/socket_service.dart';
 import 'package:project_tracker/screens/services/chat.dart';
+import 'package:project_tracker/screens/services/project_selection_service.dart';
+import 'package:project_tracker/screens/admin/manageprojectselection.dart';
 
-void main() {
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+void main() async{
+  await dotenv.load(fileName: ".env");
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => SocketService('ws://192.168.0.157:4000'),
+          create: (context) => SocketService('ws:${dotenv.env['IP_ADDR']}:4000'),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ProjectSelectionService(),
         ),
       ],
       child: const MyApp(),
@@ -61,6 +68,7 @@ class MyApp extends StatelessWidget {
         '/viewTeams': (context) => const Viewteams(),
         '/viewProjects': (context) => const Viewprojects(),
         '/viewProjectMilestones': (context) => const Viewmilestones(),
+        '/manageProjectSelection': (context) => const ManageProjectSelection(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/chat') {

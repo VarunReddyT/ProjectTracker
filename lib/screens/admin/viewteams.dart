@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Viewteams extends StatefulWidget {
   const Viewteams({super.key});
 
@@ -21,7 +21,7 @@ class _ViewteamsState extends State<Viewteams> {
         isInit = false;
       });
       var response = await http.get(Uri.parse(
-          'https://ps-project-tracker.vercel.app/api/team/getTeams/$year'));
+          '${dotenv.env['API_KEY']}/api/team/getTeams/$year'));
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         setState(() {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Addacademicproject extends StatefulWidget {
   const Addacademicproject({super.key});
@@ -14,7 +15,7 @@ class _AddacademicprojectState extends State<Addacademicproject> {
   TextEditingController projectDescription = TextEditingController();
   TextEditingController projectDomain = TextEditingController();
   TextEditingController projectTechnologies = TextEditingController();
-
+  int? selectedYear;
   List<String> technologies = [];
   void _addTechnology() {
     if (projectTechnologies.text.isNotEmpty) {
@@ -28,7 +29,7 @@ class _AddacademicprojectState extends State<Addacademicproject> {
   void _submitForm() async {
     try {
       var response = await http.post(
-          Uri.parse('https://ps-project-tracker.vercel.app/api/project/addProject'),
+          Uri.parse('${dotenv.env['API_KEY']}/api/project/addProject'),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -37,6 +38,7 @@ class _AddacademicprojectState extends State<Addacademicproject> {
             'projectDescription': projectDescription.text,
             'projectDomain': projectDomain.text,
             'projectTechnologies': technologies,
+            'targetYear': selectedYear,
           }));
       if (response.statusCode == 200) {
         if (mounted) {
@@ -90,6 +92,24 @@ class _AddacademicprojectState extends State<Addacademicproject> {
                 controller: projectDescription,
                 decoration: const InputDecoration(
                   labelText: 'Project Description',
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField(
+                value: selectedYear,
+                items: List.generate(4, (index) {
+                  return DropdownMenuItem(
+                    value: index + 1,
+                    child: Text('Year ${index + 1}'),
+                  );
+                }),
+                onChanged: (value) {
+                  setState(() {
+                    selectedYear = value;
+                  });
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Target Year',
                 ),
               ),
               const SizedBox(height: 16),

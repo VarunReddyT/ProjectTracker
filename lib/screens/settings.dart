@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Replace with shared_preferences
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Settings extends StatefulWidget {
   const Settings({super.key});
 
@@ -32,7 +32,7 @@ class _SettingsState extends State<Settings> {
       }
 
       var response = await http.post(
-        Uri.parse('https://ps-project-tracker.vercel.app/api/user/changePassword'),
+        Uri.parse('${dotenv.env['API_KEY']}/api/user/changePassword'),
         headers: {
           'Content-Type': 'application/json',
         },
