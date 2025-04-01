@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class ProjectSelectionService extends ChangeNotifier {
   late IO.Socket socket;
   bool isAdmin = false;
+
+  final StreamController<String> _errorController = StreamController<String>.broadcast();
   
   Future<void> initialize(String url, {bool isAdmin = false}) async {
     this.isAdmin = isAdmin;

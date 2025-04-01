@@ -56,9 +56,11 @@ const ProjectSelectionRoutes = (io) => {
                     {$set: {isReleased: true}},
                     {session}
                 );
+                console.log(`Selection session started for year ${targetYear}`);
+                console.log(`Projects released: ${projects.map(p => p._id)}`);
 
                 await session.commitTransaction();
-                
+
                 io.emit("projects_released", {
                     targetYear,
                     duration: SESSION_TIMEOUT,
