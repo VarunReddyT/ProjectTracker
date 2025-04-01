@@ -131,6 +131,14 @@ class _HomeState extends State<Home> {
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.black87),
+            onPressed: () {
+              Navigator.pushNamed(context, '/projectSelection');
+            },
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(

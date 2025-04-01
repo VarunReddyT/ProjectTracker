@@ -38,7 +38,7 @@ const ProjectSelectionRoutes = (io) => {
                 const projects = await Project.find({targetYear: targetYear, isReleased: false, isAssigned: false}).session(session);
                 if(projects.length === 0){
                     session.abortTransaction();
-                    socket.emit("release_error", {
+                    socket.emit("no_projects", {
                         code : "NO_PROJECTS",
                         message: "No projects available for selection"
                     });
@@ -118,6 +118,24 @@ const ProjectSelectionRoutes = (io) => {
 
         socket.on("admin_stop_selection",endSession);
 
+        socket.on("display_projects", async ({targetYear}) => {
+            if(!activeSession){
+                socket.emit("release_error", {
+                    code : "NO_ACTIVE_SESSION",
+                    message: "No selection session active"});
+                return;
+            }
+            if(activeSession.targetYear !== targetYear){
+                socket.emit("release_error", {
+                    code : "INVALID_YEAR",
+                    message: "Invalid target year"});
+                return;
+            }
+            io.emit("display_projects", {
+                projects : activeSession.projects
+            });
+        });
+
         socket.on("team_select_project", async ({teamId, projectId}) => {
             if(connectedTeams.has(teamId)){
                 socket.emit("selection_error", {
@@ -141,6 +159,8 @@ const ProjectSelectionRoutes = (io) => {
                     Team.findById(teamId),
                     Project.findById(projectId)
                 ])
+
+                
 
                 if(!team || !project){
                     session.abortTransaction();

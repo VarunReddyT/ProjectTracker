@@ -6,8 +6,19 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class ProjectSelectionService extends ChangeNotifier {
   late IO.Socket socket;
   bool isAdmin = false;
+  int? selectedYear;
+  final StreamController<Map<String, dynamic>> _errorController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
-  final StreamController<String> _errorController = StreamController<String>.broadcast();
+  Stream<Map<String, dynamic>> get errorStream => _errorController.stream;
+
+  final StreamController<List<Map<String, dynamic>>> _projectsController = 
+      StreamController<List<Map<String, dynamic>>>.broadcast();
+
+  Stream<List<Map<String, dynamic>>> get projectsStream => _projectsController.stream;
+
+  int get getSelectedYear => selectedYear ?? 0;
+  bool get isSelectionActive => selectedYear != null;
   
   Future<void> initialize(String url, {bool isAdmin = false}) async {
     this.isAdmin = isAdmin;
@@ -21,7 +32,47 @@ class ProjectSelectionService extends ChangeNotifier {
 
     socket.onConnect((_) => debugPrint('Connected'));
     socket.onDisconnect((_) => debugPrint('Disconnected'));
-    socket.onError((err) => debugPrint('Error: $err'));
+    socket.onError((err) => _errorController.add({
+      'code': 'CONNECTION_ERROR',
+      'message': err.toString()      
+      }));
+
+    socket.on('release_error', (data) {
+      _errorController.add({
+        'code': 'RELEASE_ERROR',
+        'message': data['message'],
+      });
+    });
+
+    socket.on('no_projects', (data) {
+      _errorController.add({
+        'code': 'NO_PROJECTS',
+        'message': data['message'],
+      });
+    });
+
+    socket.on('selection_error', (data) {
+      _errorController.add({
+        'code': 'SELECTION_ERROR',
+        'message': data['message'],
+      });
+    });
+
+    socket.on('projects_released', (data) {
+      selectedYear = data['targetYear'];
+      notifyListeners();
+    });
+
+    socket.on('projects_selection_ended', (data) {
+      selectedYear = null;
+      notifyListeners();
+    });
+
+    socket.on('display_projcets',(data){
+      final projects = List<Map<String, dynamic>>.from(data['projects']);
+      _projectsController.add(projects);
+    });
+
 
     socket.connect();
   }
@@ -30,15 +81,21 @@ void startProjectSelection(int year){
   if(isAdmin){
     socket.emit('admin_start_selection', {'targetYear' : year});
   }else{
-    socket.emit('auth_error', {'message' : 'You are not authorized to start project selection'});
+    _errorController.add({
+      'code': 'AUTH_ERROR',
+      'message': 'You are not authorized to start project selection',
+    });
   }
 }
 
 void stopProjectSelection(int year){
-  if(isAdmin){
+  if(isAdmin && selectedYear != null && selectedYear == year){
     socket.emit('admin_stop_selection');
   }else{
-    socket.emit('auth_error', {'message' : 'You are not authorized to stop project selection'});
+    _errorController.add({
+      'code': 'AUTH_ERROR',
+      'message': 'You are not authorized to stop project selection',
+    });
   }
 }
 
@@ -49,12 +106,22 @@ void teamSelectProject(String teamId, String projectId) {
       'projectId': projectId,
     });
   }else{
-    socket.emit('select_error', {'message' : 'You are not a student'});
+    _errorController.add({
+      'code': 'AUTH_ERROR',
+      'message': 'You are not a student',
+    });
   }
+}
+
+void getProjects(int year){
+  socket.emit('display_projects', {
+    'targetYear': year,
+  });
 }
 
   void disconnect() {
     socket.disconnect();
     socket.dispose();
+    _errorController.close();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_tracker/screens/services/project_selection_service.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ManageProjectSelection extends StatefulWidget {
   const ManageProjectSelection({super.key});
@@ -13,11 +14,57 @@ class _ManageProjectSelectionState extends State<ManageProjectSelection> {
   int? selectedYear;
   bool isLoading = false;
   late final ProjectSelectionService projectSelectionService;
+  late final Stream<Map<String, dynamic>> errorStream;
 
   @override
   void initState() {
     super.initState();
     projectSelectionService = Provider.of<ProjectSelectionService>(context, listen: false);
+    errorStream = projectSelectionService.errorStream;
+    errorStream.listen((error) {
+      _handleError(error);
+    });
+  }
+
+  void _handleError(Map<String, dynamic> error) {
+    if(!mounted) return;
+
+    final errorCode = error['code'] ?? 'UNKNOWN_ERROR';
+    final errorMessage = error['message'] ?? 'An unknown error occurred';
+
+    switch(errorCode){
+      case 'CONNECTION_ERROR':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connection Error: $errorMessage')),
+        );
+        break;
+      case 'RELEASE_ERROR':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Release Error: $errorMessage')),
+        );
+        break;
+      case 'NO_PROJECTS':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No Projects: $errorMessage')),
+        );
+        break;
+      case 'SELECTION_ERROR':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Selection Error: $errorMessage')),
+        );
+        break;
+      case 'AUTH_ERROR':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Authorization Error: $errorMessage')),
+        );
+        break;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $errorMessage')),
+        );
+        break;
+
+    }
   }
 
   Future<void> handleStartProjectSelection() async {
@@ -31,15 +78,10 @@ class _ManageProjectSelectionState extends State<ManageProjectSelection> {
     setState(() => isLoading = true);
     try {
       await projectSelectionService.initialize(
-        "ws://192.168.0.158:4000", 
+        "ws://${dotenv.env['IP_ADDR']}:4000", 
         isAdmin: true,
       );
       projectSelectionService.startProjectSelection(selectedYear!);
-      if(mounted){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Project selection started for year $selectedYear')),
-        );
-      }
     } catch (e) {
       if(mounted){
         ScaffoldMessenger.of(context).showSnackBar(
@@ -78,8 +120,16 @@ class _ManageProjectSelectionState extends State<ManageProjectSelection> {
     }
   }
 
+  @override 
+  void dispose() {
+    errorStream.drain<void>();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isActiveForSelectedYear = projectSelectionService.isSelectionActive && projectSelectionService.getSelectedYear == selectedYear;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Project Selection'),
@@ -133,7 +183,7 @@ class _ManageProjectSelectionState extends State<ManageProjectSelection> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: isLoading ? null : handleStartProjectSelection,
+                onPressed: (isLoading || isActiveForSelectedYear) ? null : handleStartProjectSelection,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                 ),
@@ -143,7 +193,7 @@ class _ManageProjectSelectionState extends State<ManageProjectSelection> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: isLoading ? null : handleStopProjectSelection,
+                onPressed: (isLoading || isActiveForSelectedYear) ? null : handleStopProjectSelection,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                   backgroundColor: Colors.red,

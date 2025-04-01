@@ -22,6 +22,7 @@ import 'package:project_tracker/screens/services/socket_service.dart';
 import 'package:project_tracker/screens/services/chat.dart';
 import 'package:project_tracker/screens/services/project_selection_service.dart';
 import 'package:project_tracker/screens/admin/manageprojectselection.dart';
+import 'package:project_tracker/screens/student/projectselection.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async{
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
         '/tasks': (context) => const Tasks(),
         '/milestones': (context) => const Milestones(),
         '/addProject': (context) => const AddProject(),
+        '/projectSelection': (context) => const ProjectSelection(),
         '/share': (context) => const Share(),
         '/team': (context) => const Team(),
         '/settings': (context) => const Settings(),

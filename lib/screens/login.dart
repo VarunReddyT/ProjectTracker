@@ -60,15 +60,15 @@ class _LoginState extends State<Login> {
           await prefs.setString('studentId',responseData['id']);
           await prefs.setString('role', responseData['role']);
           await prefs.setString('studentName', responseData['studentName']);
-          await prefs.setString(
-              'studentYear', responseData['studentYear'].toString());
+          await prefs.setInt(
+              'studentYear', responseData['studentYear']);
           await prefs.setString('studentBranch', responseData['studentBranch']);
           await prefs.setString(
               'studentSection', responseData['studentSection']);
           await prefs.setString('studentRollNo', responseData['studentRollNo']);
-          await prefs.setString(
-              'studentSemester', responseData['studentSemester'].toString());
-          await prefs.setString('inAteam', responseData['inAteam'].toString());
+          await prefs.setInt(
+              'studentSemester', responseData['studentSemester']);
+          await prefs.setBool('inAteam', responseData['inAteam']);
           await prefs.setString('teamId', responseData['teamId']);
           await prefs.setString(
               'projectIds', jsonEncode(responseData['projectIds']));
