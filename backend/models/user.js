@@ -18,7 +18,6 @@ const BaseUserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      min: 6,
     },
   },
   {
@@ -72,7 +71,23 @@ const StudentSchema = new mongoose.Schema({
 
 const AdminSchema = new mongoose.Schema({});
 
+const MentorSchema = new mongoose.Schema({
+  mentorName: {
+    type: String,
+    required: true,
+  },
+  assignedTeamsAndProjects : {
+    type: Map,
+    of: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+    }],
+    default: {},
+  }
+});
+
 const Student = BaseUser.discriminator('Student', StudentSchema);
 const Admin = BaseUser.discriminator('Admin', AdminSchema);
+const Mentor = BaseUser.discriminator('Mentor', MentorSchema);
 
-module.exports = { BaseUser, Student, Admin };
+module.exports = { BaseUser, Student, Admin, Mentor };

@@ -94,6 +94,11 @@ const ProjectSchema = new mongoose.Schema({
         enum : [1,2,3,4],
         required : true
     },
+    mentorId : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Mentor',
+        required: true
+    }
 
 },{timestamps : true});
 

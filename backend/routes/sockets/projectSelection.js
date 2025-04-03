@@ -118,7 +118,7 @@ const ProjectSelectionRoutes = (io) => {
 
         socket.on("admin_stop_selection",endSession);
 
-        socket.on("display_projects", async ({targetYear}) => {
+        socket.on("request_projects", async ({targetYear}) => {
             if(!activeSession){
                 socket.emit("release_error", {
                     code : "NO_ACTIVE_SESSION",
@@ -131,8 +131,18 @@ const ProjectSelectionRoutes = (io) => {
                     message: "Invalid target year"});
                 return;
             }
+            const projects = await Project.find({
+                _id: { $in: activeSession.projects },
+                isReleased: true,
+                isAssigned: false
+              });
             io.emit("display_projects", {
-                projects : activeSession.projects
+                projects: projects.map(p => ({
+                    id: p._id,
+                    name: p.projectTitle,
+                    description: p.projectDescription,
+                    technologies: p.projectTechnologies,
+                  }))
             });
         });
 

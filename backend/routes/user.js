@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { BaseUser, Student, Admin} = require('../models/user');
+const { BaseUser, Student, Admin, Mentor} = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { ChatRoom, Message } = require('../models/chat');
@@ -47,9 +47,12 @@ router.post('/login', async (req, res) => {
         if (!validPassword) {
             return res.status(400).send("Invalid Password");
         }
-        const token = jwt.sign({ _id: user._id, role: role }, "varunkey");
+        const token = jwt.sign({ _id: user._id, role: role }, process.env.JWT_SECRET);
         if (role === "Student") {
             res.status(200).send({ token: token, role: role, studentName: user.username, studentYear: user.studentYear, studentBranch: user.studentBranch, studentSection: user.studentSection, studentRollNo: user.studentRollNo, studentSemester: user.studentSemester, inAteam: user.inAteam, teamId: user.teamId, projectIds: user.projectIds, id : user._id });
+        }
+        else if (role === "Mentor") {
+            res.status(200).send({ token: token, role: role, username: user.username, email : user.email,assignedTeamsAndProjects: user.assignedTeamsAndProjects, id : user._id });
         }
         else {
             res.status(200).send({ token: token, role: role, username: user.username, email: user.email });
@@ -117,6 +120,29 @@ router.post('/addAdmin', async (req, res) => {
         res.status(200).send(savedAdmin);
     } catch (err) {
         res.status(400).send(err);
+    }
+});
+
+router.post('/addMentor', async (req, res) => {
+    try{
+        const emailExists = await BaseUser.findOne({
+            email: req.body.email
+        });
+        if (emailExists) {
+            return res.status(400).send("Email already exists");
+        }
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const mentor = new Mentor({
+            username: req.body.username,
+            email: req.body.email,
+            password: hashedPassword,
+            mentorName: req.body.mentorName
+        });
+        const savedMentor = await mentor.save();
+        res.status(200).send(savedMentor);
+    }
+    catch(err){
+        res.status(500).send(err);
     }
 });
 

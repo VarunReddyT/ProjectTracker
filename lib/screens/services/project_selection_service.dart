@@ -7,19 +7,42 @@ class ProjectSelectionService extends ChangeNotifier {
   late IO.Socket socket;
   bool isAdmin = false;
   int? selectedYear;
-  final StreamController<Map<String, dynamic>> _errorController =
-      StreamController<Map<String, dynamic>>.broadcast();
+  late StreamController<Map<String, dynamic>> _errorController;
 
   Stream<Map<String, dynamic>> get errorStream => _errorController.stream;
 
-  final StreamController<List<Map<String, dynamic>>> _projectsController = 
-      StreamController<List<Map<String, dynamic>>>.broadcast();
+  late StreamController<List<Map<String, dynamic>>> _projectsController;
 
   Stream<List<Map<String, dynamic>>> get projectsStream => _projectsController.stream;
+
+   ProjectSelectionService() {
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
+    _errorController = StreamController<Map<String, dynamic>>.broadcast();
+    _projectsController = StreamController<List<Map<String, dynamic>>>.broadcast();
+  }
 
   int get getSelectedYear => selectedYear ?? 0;
   bool get isSelectionActive => selectedYear != null;
   
+  void _safeAddError(Map<String, dynamic> error) {
+    if (!_errorController.isClosed) {
+      _errorController.add(error);
+    } else {
+      debugPrint('Error controller closed when trying to add: $error');
+    }
+  }
+
+  void _safeAddProjects(List<Map<String, dynamic>> projects) {
+    if (!_projectsController.isClosed) {
+      _projectsController.add(projects);
+    } else {
+      debugPrint('Projects controller closed when trying to add projects');
+    }
+  }
+
   Future<void> initialize(String url, {bool isAdmin = false}) async {
     this.isAdmin = isAdmin;
     socket = IO.io(url, IO.OptionBuilder()
@@ -32,10 +55,10 @@ class ProjectSelectionService extends ChangeNotifier {
 
     socket.onConnect((_) => debugPrint('Connected'));
     socket.onDisconnect((_) => debugPrint('Disconnected'));
-    socket.onError((err) => _errorController.add({
+    socket.onError((err) => _safeAddError({
       'code': 'CONNECTION_ERROR',
       'message': err.toString()      
-      }));
+    }));
 
     socket.on('release_error', (data) {
       _errorController.add({
@@ -68,9 +91,16 @@ class ProjectSelectionService extends ChangeNotifier {
       notifyListeners();
     });
 
-    socket.on('display_projcets',(data){
-      final projects = List<Map<String, dynamic>>.from(data['projects']);
-      _projectsController.add(projects);
+    socket.on('display_projects', (data) {
+      try {
+        final projects = List<Map<String, dynamic>>.from(data['projects']);
+        _safeAddProjects(projects);
+      } catch (e) {
+        _safeAddError({
+          'code': 'DATA_ERROR',
+          'message': 'Failed to parse projects: ${e.toString()}'
+        });
+      }
     });
 
 
@@ -114,14 +144,35 @@ void teamSelectProject(String teamId, String projectId) {
 }
 
 void getProjects(int year){
-  socket.emit('display_projects', {
-    'targetYear': year,
-  });
+  try {
+    socket.emit('request_projects', {
+      'targetYear': year,
+    });
+  } catch (e) {
+    _errorController.add({
+      'code': 'FETCH_ERROR',
+      'message': 'Failed to fetch projects: ${e.toString()}',
+    });
+  }
 }
 
-  void disconnect() {
-    socket.disconnect();
-    socket.dispose();
-    _errorController.close();
+ void disconnect() {
+    try {
+      socket.disconnect();
+      socket.dispose();
+    } catch (e) {
+      debugPrint('Error disconnecting socket: ${e.toString()}');
+    } finally {
+      _closeControllers();
+    }
+  }
+
+  void _closeControllers() {
+    if (!_errorController.isClosed) {
+      _errorController.close();
+    }
+    if (!_projectsController.isClosed) {
+      _projectsController.close();
+    }
   }
 }

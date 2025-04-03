@@ -23,6 +23,10 @@ const TeamSchema = new mongoose.Schema({
     hasSelected: {
         type: Boolean,
         default: false
+    },
+    mentor : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Mentor'
     }
 }, { timestamps: true });
 
