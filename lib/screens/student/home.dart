@@ -56,7 +56,14 @@ class _HomeState extends State<Home> {
     try {
       var response = await http.get(Uri.parse(
           '${dotenv.env['API_KEY']}/api/user/getChatIds/$userId'));
-
+      if(response.statusCode == 404){
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('You are not assigned to any project')),
+          );
+        }
+        return;
+      }
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         if (data is List) {
@@ -220,11 +227,35 @@ class _HomeState extends State<Home> {
       //   },
       //   child: const Icon(Icons.add),
       // ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          fetchChatRooms();
-        },
-        child: const Icon(Icons.add),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     fetchChatRooms();
+      //   },
+      //   child: const Icon(Icons.add),
+      // ),
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: () {
+                addProject();
+              },
+              child: const Icon(Icons.add),
+            ),
+          ),
+          Positioned(
+            bottom: 16,
+            left: 50,
+            child: FloatingActionButton(
+              onPressed: () {
+                fetchChatRooms();
+              },
+              child: const Icon(Icons.chat),
+            ),
+          ),
+        ],
       ),
     );
   }

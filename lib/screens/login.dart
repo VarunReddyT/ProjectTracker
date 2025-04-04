@@ -69,9 +69,9 @@ class _LoginState extends State<Login> {
           await prefs.setInt(
               'studentSemester', responseData['studentSemester']);
           await prefs.setBool('inAteam', responseData['inAteam']);
-          await prefs.setString('teamId', responseData['teamId']);
+          await prefs.setString('teamId', responseData['teamId'] ?? '');
           await prefs.setString(
-              'projectIds', jsonEncode(responseData['projectIds']));
+              'projectIds', jsonEncode(responseData['projectIds'] ?? []));
           setState(() {
             isLoading = false;
           });
