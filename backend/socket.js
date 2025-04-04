@@ -10,10 +10,9 @@ const initSocket = (server) => {
       methods: ["GET", "POST"],
       credentials: true,
     },
-    transports: ["websocket", "polling"], // Allow both transports
+    transports: ["websocket", "polling"],
   });
 
-  // Connection logging
   io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
 
