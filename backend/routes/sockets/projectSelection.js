@@ -134,7 +134,6 @@ const ProjectSelectionRoutes = (io) => {
             const projects = await Project.find({
                 _id: { $in: activeSession.projects },
                 isReleased: true,
-                isAssigned: false
               });
             io.emit("display_projects", {
                 projects: projects.map(p => ({
@@ -142,6 +141,7 @@ const ProjectSelectionRoutes = (io) => {
                     name: p.projectTitle,
                     description: p.projectDescription,
                     technologies: p.projectTechnologies,
+                    isAssigned: p.isAssigned,
                   }))
             });
         });
@@ -231,7 +231,8 @@ const ProjectSelectionRoutes = (io) => {
                 socket.emit("project_selected", {
                     projectId,
                     projectName: updatedProject.projectTitle,
-                    projectDescription: updatedProject.projectDescription
+                    projectDescription: updatedProject.projectDescription,
+                    isAssigned : true,
                 });
             }
             catch(err){

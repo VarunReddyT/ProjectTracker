@@ -46,11 +46,16 @@ class _ProjectSelectionState extends State<ProjectSelection> {
   Future<void> _initializeProjectSelection() async {
     _projectService.projectsStream.listen((projects) {
       setState(() {
-        _projects = projects;
-        print('Projects: $_projects');
+        _projects = projects.map((newProject) {
+                final existing = _projects.firstWhere(
+                    (p) => p['id'] == newProject['id'],
+                    orElse: () => newProject,
+                );
+                return {...newProject, 'isAssigned': existing['isAssigned'] ?? false};
+            }).toList();
       });
     });
-    
+
     try {
       await _projectService.initialize(
         "ws://${dotenv.env['IP_ADDR']}:4000",
@@ -71,7 +76,7 @@ class _ProjectSelectionState extends State<ProjectSelection> {
     final code = error['code'] ?? 'UNKNOWN_ERROR';
     final message = error['message'] ?? 'An error occurred';
 
-    switch(code){
+    switch (code) {
       case 'CONNECTION_ERROR':
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Connection Error: $message')),
@@ -105,14 +110,47 @@ class _ProjectSelectionState extends State<ProjectSelection> {
     }
   }
 
-  void _selectProject(String projectId) {
+  Future<void> _selectProject(String projectId, String projectName) async {
     if (_teamId == null) return;
-    
-    setState(() {
-      _selectedProjectId = projectId;
-    });
-    
-    _projectService.teamSelectProject(_teamId!, projectId);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Project Selection'),
+        content: Text('Are you sure you want to select "$projectName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() {
+        _selectedProjectId = projectId;
+        _projects = _projects.map((p) {
+          if (p['id'] == projectId) {
+            return {...p, 'isAssigned': true};
+          }
+          return p;
+        }).toList();
+      });
+
+      _projectService.teamSelectProject(_teamId!, projectId);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Project selected successfully!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -170,22 +208,49 @@ class _ProjectSelectionState extends State<ProjectSelection> {
             const SizedBox(height: 10),
             Expanded(
               child: _projects.isEmpty
-                  ? const Center(child: Text('No projects available for selection'))
+                  ? const Center(
+                      child: Text('No projects available for selection'))
                   : ListView.builder(
                       itemCount: _projects.length,
                       itemBuilder: (context, index) {
                         final project = _projects[index];
                         final isSelected = _selectedProjectId == project['id'];
-                        
+                        final isAssigned = project['assigned'] == true;
+
                         return Card(
-                          color: isSelected ? Colors.blue[50] : null,
+                          color: isSelected
+                              ? Colors.blue[50]
+                              : isAssigned
+                                  ? Colors.grey[200]
+                                  : null,
                           child: ListTile(
                             title: Text(project['name']),
-                            subtitle: Text(project['description']),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(project['description']),
+                                if (isAssigned)
+                                  const Text('Already assigned',
+                                      style: TextStyle(color: Colors.red)),
+                              ],
+                            ),
                             trailing: isSelected
-                                ? const Icon(Icons.check_circle, color: Colors.green)
-                                : null,
-                            onTap: () => _selectProject(project['id']),
+                                ? const Icon(Icons.check_circle,
+                                    color: Colors.green)
+                                : isAssigned
+                                    ? const Icon(Icons.lock, color: Colors.grey)
+                                    : null,
+                            onTap: isAssigned
+                                ? () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Project already assigned'),
+                                      ),
+                                    );
+                                  }
+                                : () => _selectProject(
+                                    project['id'], project['name']),
                           ),
                         );
                       },
