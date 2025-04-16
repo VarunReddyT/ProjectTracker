@@ -120,4 +120,18 @@ router.get('/getStudentDetails/:studentRollNo/:teamId', async (req, res) => {
     }
 });
 
+router.get('/getNotInATeamStudents/:studentYear', async (req, res) => {
+    try{
+        const students = await Student.find({studentYear: req.params.studentYear, inAteam: false}).select('studentName studentRollNo')
+        if(!students){
+            return res.status(404).send("Students not found");
+        }
+        res.status(200).send(students);
+    }
+    catch(err){
+        res.status(500).send(err);
+    }
+}
+);
+
 module.exports = router;

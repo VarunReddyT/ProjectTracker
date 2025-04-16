@@ -90,6 +90,23 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void handleProjectSelection() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? teamId = prefs.getString('teamId');
+
+    if(teamId == null){
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You are not assigned to any team')),
+        );
+      }
+      return;
+    }
+    if (mounted) {
+      Navigator.pushNamed(context, '/projectSelection');
+    }
+  }
+
   Future<void> fetchData() async {
     final prefs = await SharedPreferences.getInstance();
     studentRollNo = prefs.getString('studentRollNo');
@@ -142,7 +159,7 @@ class _HomeState extends State<Home> {
           IconButton(
             icon: const Icon(Icons.notifications, color: Colors.black87),
             onPressed: () {
-              Navigator.pushNamed(context, '/projectSelection');
+              handleProjectSelection();
             },
           ),
         ],

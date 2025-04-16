@@ -10,7 +10,7 @@ import 'package:project_tracker/screens/student/team.dart';
 import 'package:project_tracker/screens/admin/admin.dart';
 import 'package:project_tracker/screens/admin/addacademicproject.dart';
 import 'package:project_tracker/screens/admin/addmilestone.dart';
-import 'package:project_tracker/screens/admin/addteam.dart';
+import 'package:project_tracker/screens/admin/addteam.dart' as admin_addteam;
 import 'package:project_tracker/screens/admin/assignproject.dart';
 import 'package:project_tracker/screens/admin/viewprojects.dart';
 import 'package:project_tracker/screens/admin/viewteams.dart';
@@ -66,7 +66,7 @@ class MyApp extends StatelessWidget {
         '/addStudent': (context) => const Addstudent(),
         '/assignProject': (context) => const AssignProject(),
         '/addMilestone': (context) => const Addmilestone(),
-        '/addTeam': (context) => const Addteam(),
+        '/addTeam': (context) => const admin_addteam.Addteam(),
         '/viewTeams': (context) => const Viewteams(),
         '/viewProjects': (context) => const Viewprojects(),
         '/viewProjectMilestones': (context) => const Viewmilestones(),
